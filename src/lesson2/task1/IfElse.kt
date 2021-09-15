@@ -3,6 +3,7 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -68,7 +69,16 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * Мой возраст. Для заданного 0 < n < 200, рассматриваемого как возраст человека,
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
-fun ageDescription(age: Int): String = TODO()
+fun ageDescription(age: Int): String {
+    if (age in 5..20 || age in 105..120 || (age % 10) in 5..9 || age % 10 == 0)
+        return "$age лет"
+
+    if ((age % 10) in 2..4)
+        return "$age года"
+    else
+        return "$age год"
+}
+
 
 /**
  * Простая (2 балла)
@@ -96,7 +106,19 @@ fun whichRookThreatens(
     kingX: Int, kingY: Int,
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
-): Int = TODO()
+): Int {
+
+    val safe1 = (rookX1 != kingX && rookY1 != kingY)
+    val safe2 = (rookX2 != kingX && rookY2 != kingY)
+
+    if (safe1 && safe2) return 0
+    if (!safe1 && safe2) return 1
+    if (safe1 && !safe2) return 2
+    return 3
+
+
+}
+
 
 /**
  * Простая (2 балла)
@@ -110,9 +132,19 @@ fun whichRookThreatens(
  */
 fun rookOrBishopThreatens(
     kingX: Int, kingY: Int,
-    rookX: Int, rookY: Int,
-    bishopX: Int, bishopY: Int
-): Int = TODO()
+    rookX: Int, rookY: Int,   // ладья
+    bishopX: Int, bishopY: Int  // слон
+): Int {
+
+    val safeRook = (kingX != rookX && kingY != rookY)
+    val safeBishop = (abs(bishopX-kingX) != abs(bishopY-kingY))
+
+    if (safeRook && safeBishop) return 0
+    if (!safeRook && safeBishop) return 1
+    if (safeRook && !safeBishop) return 2
+    return 3
+
+}
 
 /**
  * Простая (2 балла)
@@ -122,7 +154,27 @@ fun rookOrBishopThreatens(
  * прямоугольным (вернуть 1) или тупоугольным (вернуть 2).
  * Если такой треугольник не существует, вернуть -1.
  */
-fun triangleKind(a: Double, b: Double, c: Double): Int = TODO()
+fun triangleKind(a: Double, b: Double, c: Double): Int {
+    if ((a + b <= c) || (a + c <= b) || (b + c <= a))
+        return -1
+    if ((a * a + b * b == c * c) || (a * a + c * c == b * b) || (c * c + b * b == a * a))
+        return 1
+
+    // Будем проверять знак косинуса между углами.
+    // Если отриц. - угол тупой, если полож. - острый
+    // Важен знак, а не числовое значение, поэтому можно не делить на 2 * a * b,
+    // т.к. не влияет на знак
+
+    val cos1 = (a * a + b * b - c * c)
+    val cos2 = (a * b + c * c - b * b)
+    val cos3 = (b * b + c * c - a * a)
+
+    if (cos1 < 0 || cos2 < 0 || cos3 < 0)
+        return 2
+    return 0
+
+
+}
 
 /**
  * Средняя (3 балла)
