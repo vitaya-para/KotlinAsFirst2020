@@ -5,6 +5,7 @@ package lesson2.task1
 import lesson1.task1.discriminant
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 // Урок 2: ветвления (здесь), логический тип (см. 2.2).
@@ -91,7 +92,7 @@ fun timeForHalfWay(
     t1: Double, v1: Double,
     t2: Double, v2: Double,
     t3: Double, v3: Double
-): Double = TODO()
+): Double = TODO ()
 
 /**
  * Простая (2 балла)
@@ -160,7 +161,7 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
     if ((a * a + b * b == c * c) || (a * a + c * c == b * b) || (c * c + b * b == a * a))
         return 1
 
-    // Будем проверять знак косинуса между углами.
+    // Будем проверять знак каждого косинуса между всеми углами.
     // Если отриц. - угол тупой, если полож. - острый
     // Важен знак, а не числовое значение, поэтому можно не делить на 2 * a * b,
     // т.к. не влияет на знак
@@ -184,4 +185,13 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Найти длину пересечения отрезков AB и CD.
  * Если пересечения нет, вернуть -1.
  */
-fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int = TODO()
+fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
+
+    if ( (c in a..b && d in a..b) || (a in c..d && b in c..d) )
+        return min(b-a, d-c)
+    if (c in a..b+1 )
+        return b-c
+    if (a in c..d+1)
+        return d-a
+    return -1
+}
