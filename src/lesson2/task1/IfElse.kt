@@ -92,7 +92,7 @@ fun timeForHalfWay(
     t1: Double, v1: Double,
     t2: Double, v2: Double,
     t3: Double, v3: Double
-): Double = TODO ()
+): Double = TODO()
 
 /**
  * Простая (2 балла)
@@ -133,12 +133,12 @@ fun whichRookThreatens(
  */
 fun rookOrBishopThreatens(
     kingX: Int, kingY: Int,
-    rookX: Int, rookY: Int,   // ладья
-    bishopX: Int, bishopY: Int  // слон
+    rookX: Int, rookY: Int,
+    bishopX: Int, bishopY: Int
 ): Int {
 
     val safeRook = (kingX != rookX && kingY != rookY)
-    val safeBishop = (abs(bishopX-kingX) != abs(bishopY-kingY))
+    val safeBishop = (abs(bishopX - kingX) != abs(bishopY - kingY))
 
     if (safeRook && safeBishop) return 0
     if (!safeRook && safeBishop) return 1
@@ -187,11 +187,11 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
 
-    if ( (c in a..b && d in a..b) || (a in c..d && b in c..d) )
-        return min(b-a, d-c)
-    if (c in a..b+1 )
-        return b-c
-    if (a in c..d+1)
-        return d-a
+    if ((c in a..b && d in a..b) || (a in c..d && b in c..d))
+        return min(b - a, d - c)
+    if (c in a..b + 1)
+        return b - c
+    if (a in c..d + 1)
+        return d - a
     return -1
 }
