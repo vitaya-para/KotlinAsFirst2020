@@ -3,9 +3,10 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.sqrt
-import kotlin.math.min
 
 // Урок 2: ветвления (здесь), логический тип (см. 2.2).
 // Максимальное количество баллов = 6
@@ -69,10 +70,9 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * Мой возраст. Для заданного 0 < n < 200, рассматриваемого как возраст человека,
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
-fun ageDescription(age: Int): String {
-    if ((age % 100 > 10) and (age % 100 < 20))
-        return "$age лет"
-    return when (age % 10) {
+fun ageDescription(age: Int): String = when{
+    ((age % 100 > 10) && (age % 100 < 20)) -> "$age лет"
+    else -> when (age % 10) {
         1 -> "$age год"
         in 2..4 -> "$age года"
         in 5..9, 0 -> "$age лет"
@@ -114,21 +114,12 @@ fun whichRookThreatens(
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
 ): Int {
-    var rez = 0
-
-    var x = (kingX - rookX1)
-    var y = (kingY - rookY1)
-
-    if ((x == 0) or (y == 0))
-        rez += 1
-
-    x = (kingX - rookX2)
-    y = (kingY - rookY2)
-
-    if ((x == 0) or (y == 0))
-        rez += 2
-
-    return rez
+    var res = 0
+    if (((kingX - rookX1) == 0) || ((kingY - rookY1) == 0))
+        res += 1
+    if (((kingX - rookX2) == 0) || ((kingY - rookY2) == 0))
+        res += 2
+    return res
 }
 
 /**
@@ -146,21 +137,12 @@ fun rookOrBishopThreatens(
     rookX: Int, rookY: Int,
     bishopX: Int, bishopY: Int
 ): Int {
-    var rez = 0
-
-    var x = (kingX - rookX)
-    var y = (kingY - rookY)
-
-    if ((x == 0) or (y == 0))
-        rez += 1
-
-    x = (kingX - bishopX)
-    y = (kingY - bishopY)
-
-    if (max(x, -x) == max(y, -y))
-        rez += 2
-
-    return rez
+    var res = 0
+    if (((kingX - rookX) == 0) || ((kingY - rookY) == 0))
+        res += 1
+    if (abs(kingX - bishopX) == abs(kingY - bishopY))
+        res += 2
+    return res
 }
 
 /**
@@ -172,15 +154,14 @@ fun rookOrBishopThreatens(
  * Если такой треугольник не существует, вернуть -1.
  */
 fun triangleKind(a: Double, b: Double, c: Double): Int {
-    val hypo = max(a, max(b, c))
-    val leg1 = min(a, min(b, c))
-    val leg2 = a + b + c - hypo - leg1
+    val hypotenuse = maxOf(a, b, c)
+    val minLeg = minOf(a, b, c)
+    val middleLeg = a + b + c - hypotenuse - minLeg
     return when {
         (a >= b + c) or (b >= a + c) or (c >= a + b) -> -1
-        hypo * hypo < leg1 * leg1 + leg2 * leg2 -> 0
-        hypo * hypo == leg1 * leg1 + leg2 * leg2 -> 1
-        hypo * hypo > leg1 * leg1 + leg2 * leg2 -> 2
-        else -> 999
+        hypotenuse < sqrt(minLeg.pow(2.0) + middleLeg.pow(2.0)) -> 0
+        hypotenuse > sqrt(minLeg.pow(2.0) + middleLeg.pow(2.0)) -> 2
+        else -> 1
     }
 }
 

@@ -48,13 +48,12 @@ fun getFebDay(year: Int): Int = when {
     else -> 28
 }
 
-fun daysInMonth(month: Int, year: Int): Int {
-    return when (month) {
-        1, 3, 5, 7, 8, 10, 12 -> 31
-        4, 6, 9, 11 -> 30
-        else -> getFebDay(year)
-    }
+fun daysInMonth(month: Int, year: Int): Int = when (month) {
+    1, 3, 5, 7, 8, 10, 12 -> 31
+    4, 6, 9, 11 -> 30
+    else -> getFebDay(year)
 }
+
 
 /**
  * Простая (2 балла)
@@ -78,4 +77,4 @@ fun circleInside(
  * Вернуть true, если кирпич пройдёт
  */
 fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean =
-    (min(a, min(b, c))) <= min(r, s) && (a + b + c - min(a, min(b, c)) - max(max(a, b), c)) <= max(r, s)
+    (minOf(a, b, c)) <= min(r, s) && (a + b + c - minOf(a, b, c) - maxOf(a, b, c)) <= max(r, s)
