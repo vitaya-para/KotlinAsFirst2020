@@ -2,6 +2,7 @@
 
 package lesson3.task1
 
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 // Урок 3: циклы
@@ -193,13 +194,13 @@ fun lcm(m: Int, n: Int): Int {
  */
 fun isCoPrime(m: Int, n: Int): Boolean {
 
-    for (i in 1..sqrt(m.toDouble()).toInt()) {
+    for (i in 2..sqrt(m.toDouble()).toInt()) {
         if (m % i == 0) {
-            if ((n % i == 0) && (i != 1) || n % (m / i) == 0)
+            if ((n % i == 0) || n % (m / i) == 0)
                 return false
         }
     }
-    return true
+    return n % m != 0
 }
 
 
@@ -221,7 +222,7 @@ fun squareBetweenExists(m: Int, n: Int): Boolean = TODO()
  */
 fun revert(n: Int): Int {
 
-    var N = n
+    var N = abs(n.toDouble()).toInt()
     var reserved = 0
 
     while (N > 0) {

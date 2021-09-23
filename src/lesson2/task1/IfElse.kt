@@ -167,7 +167,7 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
     // т.к. не влияет на знак
 
     val cos1 = (a * a + b * b - c * c)
-    val cos2 = (a * b + c * c - b * b)
+    val cos2 = (a * a + c * c - b * b)
     val cos3 = (b * b + c * c - a * a)
 
     if (cos1 < 0 || cos2 < 0 || cos3 < 0)
