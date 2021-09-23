@@ -196,13 +196,16 @@ fun lcm(m: Int, n: Int): Int {
  */
 fun isCoPrime(m: Int, n: Int): Boolean {
 
+    if (m == 1 || n == 1)
+        return true
+
     for (i in 2..sqrt(m.toDouble()).toInt()) {
         if (m % i == 0) {
             if ((n % i == 0) || n % (m / i) == 0)
                 return false
         }
     }
-    return m == 1 && n == 1 || n % m != 0
+    return n % m != 0
 }
 
 
