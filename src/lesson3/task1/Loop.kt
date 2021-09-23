@@ -72,7 +72,19 @@ fun digitCountInNumber(n: Int, m: Int): Int =
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun digitNumber(n: Int): Int = TODO()
+fun digitNumber(n: Int): Int {
+    if (n < 10)
+        return 1
+
+    var curN = n
+    var count = 0
+
+    while (curN > 0) {
+        count++
+        curN /= 10
+    }
+    return count
+}
 
 /**
  * Простая (2 балла)
@@ -157,7 +169,19 @@ fun collatzSteps(x: Int): Int {
  * минимальное число k, которое делится и на m и на n без остатка
  */
 fun lcm(m: Int, n: Int): Int {
-    
+    var a = m
+    var b = n
+
+    while (a != 0 && b != 0) {
+        if (a > b)
+            a %= b
+        else
+            b %= a
+    }
+    val gcd = a + b
+
+    return (m * n) / gcd
+
 }
 
 /**
@@ -167,7 +191,17 @@ fun lcm(m: Int, n: Int): Int {
  * Взаимно простые числа не имеют общих делителей, кроме 1.
  * Например, 25 и 49 взаимно простые, а 6 и 8 -- нет.
  */
-fun isCoPrime(m: Int, n: Int): Boolean = TODO()
+fun isCoPrime(m: Int, n: Int): Boolean {
+
+    for (i in 1..sqrt(m.toDouble()).toInt()) {
+        if (m % i == 0) {
+            if ((n % i == 0) && (i != 1) || n % (m / i) == 0)
+                return false
+        }
+    }
+    return true
+}
+
 
 /**
  * Средняя (3 балла)
@@ -217,9 +251,8 @@ fun isPalindrome(n: Int): Boolean {
     }
 
     var b = 1
-    while ( n / (b * 10) != 0 )
-    {
-        if ( n % (10 * b) != reserved % (10 * b))
+    while (n / (b * 10) != 0) {
+        if (n % (10 * b) != reserved % (10 * b))
             return false
         b++
     }
