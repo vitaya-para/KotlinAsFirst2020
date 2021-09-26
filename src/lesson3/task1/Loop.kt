@@ -3,6 +3,7 @@
 package lesson3.task1
 
 import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 // Урок 3: циклы
@@ -75,7 +76,7 @@ fun digitCountInNumber(n: Int, m: Int): Int =
  */
 fun digitNumber(n: Int): Int {
 
-    var curN = abs(n.toDouble()).toInt()
+    var curN = abs(n)
 
     if (curN < 10)
         return 1
@@ -116,7 +117,7 @@ fun fib(n: Int): Int {
  */
 fun minDivisor(n: Int): Int {
 
-    for (divisor in 2..(sqrt(n.toDouble())).toInt()) {
+    for (divisor in 2..sqrt(n.toDouble()).toInt()) {
         if (n % divisor == 0)
             return divisor
     }
@@ -129,9 +130,9 @@ fun minDivisor(n: Int): Int {
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
 fun maxDivisor(n: Int): Int {
-    for (divisor in n - 1 downTo (sqrt(n.toDouble())).toInt()) {
+    for (divisor in 2..sqrt(n.toDouble()).toInt()) {
         if (n % divisor == 0)
-            return divisor
+            return n / divisor
     }
     return 1
 }
@@ -175,16 +176,24 @@ fun lcm(m: Int, n: Int): Int {
     var a = m
     var b = n
 
-    while (a != 0 && b != 0) {
-        if (a > b)
-            a %= b
-        else
-            b %= a
-    }
-    val gcd = a + b
+    val gcd = countGCD(a, b)
 
     return (m * n) / gcd
 
+}
+
+fun countGCD(a: Int, b: Int): Int {
+
+    var curA = a
+    var curB = b
+
+    while (curA != 0 && curB != 0) {
+        if (curA > curB)
+            curA %= curB
+        else
+            curB %= curA
+    }
+    return curA + curB
 }
 
 /**
@@ -194,19 +203,7 @@ fun lcm(m: Int, n: Int): Int {
  * Взаимно простые числа не имеют общих делителей, кроме 1.
  * Например, 25 и 49 взаимно простые, а 6 и 8 -- нет.
  */
-fun isCoPrime(m: Int, n: Int): Boolean {
-
-    if (m == 1 || n == 1)
-        return true
-
-    for (i in 2..sqrt(m.toDouble()).toInt()) {
-        if (m % i == 0) {
-            if ((n % i == 0) || n % (m / i) == 0)
-                return false
-        }
-    }
-    return n % m != 0
-}
+fun isCoPrime(m: Int, n: Int): Boolean = countGCD(m, n) == 1
 
 
 /**
@@ -227,12 +224,12 @@ fun squareBetweenExists(m: Int, n: Int): Boolean = TODO()
  */
 fun revert(n: Int): Int {
 
-    var N = abs(n.toDouble()).toInt()
+    var curN = abs(n)
     var reserved = 0
 
-    while (N > 0) {
-        reserved = reserved * 10 + N % 10
-        N /= 10
+    while (curN > 0) {
+        reserved = reserved * 10 + curN % 10
+        curN /= 10
     }
     return reserved
 }
@@ -248,21 +245,10 @@ fun revert(n: Int): Int {
  */
 fun isPalindrome(n: Int): Boolean {
 
-    var N = n
-    var reserved = 0
+    var curN = n
+    var reserved = revert(curN)
 
-    while (N > 0) {
-        reserved = reserved * 10 + N % 10
-        N /= 10
-    }
-
-    var b = 1
-    while (n / (b * 10) != 0) {
-        if (n % (10 * b) != reserved % (10 * b))
-            return false
-        b++
-    }
-    return true
+    return curN == reserved
 
 }
 
@@ -274,7 +260,23 @@ fun isPalindrome(n: Int): Boolean {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun hasDifferentDigits(n: Int): Boolean = TODO()
+fun hasDifferentDigits(n: Int): Boolean {
+
+    var curN = abs(n)
+    if (curN < 10)
+        return false
+
+    val dig = curN % 10
+    curN /= 10
+
+    while (curN > 0) {
+        if (dig != curN % 10)
+            return true
+        curN /= 10
+    }
+    return false
+
+}
 
 /**
  * Средняя (4 балла)
@@ -285,8 +287,20 @@ fun hasDifferentDigits(n: Int): Boolean = TODO()
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.sin и другие стандартные реализации функции синуса в этой задаче запрещается.
  */
-fun sin(x: Double, eps: Double): Double = TODO()
+fun sin(x: Double, eps: Double): Double {
+    var ans = x
+    var count = 2
+    var n = 3
+    var sammand = 0
+    while (abs(sammand) >= eps) {
+        var sammand = -1.0.pow(if (count % 2 == 0) 1 else 0) * x.pow(n) / factorial(n)
+        ans += sammand
+        count++
+        n += 2
 
+    }
+    return ans
+}
 /**
  * Средняя (4 балла)
  *

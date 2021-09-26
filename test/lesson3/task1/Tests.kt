@@ -208,6 +208,8 @@ class Tests {
         assertFalse(hasDifferentDigits(0))
         assertFalse(hasDifferentDigits(777))
         assertTrue(hasDifferentDigits(31122))
+        assertFalse(hasDifferentDigits(111))
+        assertTrue(hasDifferentDigits(114))
     }
 
     @Test

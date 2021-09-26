@@ -70,14 +70,10 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * Мой возраст. Для заданного 0 < n < 200, рассматриваемого как возраст человека,
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
-fun ageDescription(age: Int): String {
-    if (age in 5..20 || age in 105..120 || (age % 10) in 5..9 || age % 10 == 0)
-        return "$age лет"
-
-    if ((age % 10) in 2..4)
-        return "$age года"
-    else
-        return "$age год"
+fun ageDescription(age: Int): String = when {
+    age in 5..20 || age in 105..120 || age % 10 in 5..9 || age % 10 == 0 -> "$age лет"
+    age % 10 in 2..4 -> "$age года"
+    else -> "$age год"
 }
 
 
@@ -109,8 +105,8 @@ fun whichRookThreatens(
     rookX2: Int, rookY2: Int
 ): Int {
 
-    val safe1 = (rookX1 != kingX && rookY1 != kingY)
-    val safe2 = (rookX2 != kingX && rookY2 != kingY)
+    val safe1 = rookX1 != kingX && rookY1 != kingY
+    val safe2 = rookX2 != kingX && rookY2 != kingY
 
     if (safe1 && safe2) return 0
     if (!safe1 && safe2) return 1
@@ -137,8 +133,8 @@ fun rookOrBishopThreatens(
     bishopX: Int, bishopY: Int
 ): Int {
 
-    val safeRook = (kingX != rookX && kingY != rookY)
-    val safeBishop = (abs(bishopX - kingX) != abs(bishopY - kingY))
+    val safeRook = kingX != rookX && kingY != rookY
+    val safeBishop = abs(bishopX - kingX) != abs(bishopY - kingY)
 
     if (safeRook && safeBishop) return 0
     if (!safeRook && safeBishop) return 1
@@ -158,7 +154,7 @@ fun rookOrBishopThreatens(
 fun triangleKind(a: Double, b: Double, c: Double): Int {
     if ((a + b <= c) || (a + c <= b) || (b + c <= a))
         return -1
-    if ((a * a + b * b == c * c) || (a * a + c * c == b * b) || (c * c + b * b == a * a))
+    if (a * a + b * b == c * c || a * a + c * c == b * b || c * c + b * b == a * a)
         return 1
 
     // Будем проверять знак каждого косинуса между всеми углами.
@@ -166,9 +162,9 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
     // Важен знак, а не числовое значение, поэтому можно не делить на 2 * a * b,
     // т.к. не влияет на знак
 
-    val cos1 = (a * a + b * b - c * c)
-    val cos2 = (a * a + c * c - b * b)
-    val cos3 = (b * b + c * c - a * a)
+    val cos1 = a * a + b * b - c * c
+    val cos2 = a * a + c * c - b * b
+    val cos3 = b * b + c * c - a * a
 
     if (cos1 < 0 || cos2 < 0 || cos3 < 0)
         return 2
@@ -187,7 +183,7 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
 
-    if ((c in a..b && d in a..b) || (a in c..d && b in c..d))
+    if (c in a..b && d in a..b || a in c..d && b in c..d)
         return min(b - a, d - c)
     if (c in a..b + 1)
         return b - c
