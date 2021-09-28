@@ -2,6 +2,7 @@
 
 package lesson3.task1
 
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -173,10 +174,8 @@ fun collatzSteps(x: Int): Int {
  * минимальное число k, которое делится и на m и на n без остатка
  */
 fun lcm(m: Int, n: Int): Int {
-    var a = m
-    var b = n
 
-    val gcd = countGCD(a, b)
+    val gcd = countGCD(m, n)
 
     return (m * n) / gcd
 
@@ -243,14 +242,7 @@ fun revert(n: Int): Int {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun isPalindrome(n: Int): Boolean {
-
-    var curN = n
-    var reserved = revert(curN)
-
-    return curN == reserved
-
-}
+fun isPalindrome(n: Int): Boolean = n == revert(n)
 
 /**
  * Средняя (3 балла)
@@ -288,19 +280,19 @@ fun hasDifferentDigits(n: Int): Boolean {
  * Использовать kotlin.math.sin и другие стандартные реализации функции синуса в этой задаче запрещается.
  */
 fun sin(x: Double, eps: Double): Double {
-    var ans = x
+    val curX = x % (2 * PI)
+    var ans = curX
     var count = 2
     var n = 3
-    var sammand = 0
-    while (abs(sammand) >= eps) {
-        var sammand = -1.0.pow(if (count % 2 == 0) 1 else 0) * x.pow(n) / factorial(n)
+    do {
+        val sammand = (-1.0).pow(if (count % 2 == 0) 1 else 0) * curX.pow(n) / factorial(n)
         ans += sammand
         count++
         n += 2
-
-    }
+    } while (abs(sammand) >= eps)
     return ans
 }
+
 /**
  * Средняя (4 балла)
  *
@@ -310,7 +302,19 @@ fun sin(x: Double, eps: Double): Double {
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.cos и другие стандартные реализации функции косинуса в этой задаче запрещается.
  */
-fun cos(x: Double, eps: Double): Double = TODO()
+fun cos(x: Double, eps: Double): Double {
+    val curX = x % (2 * PI)
+    var ans = 1.0
+    var count = 2
+    var n = 2
+    do {
+        val sammand = (-1.0).pow(if (count % 2 == 0) 1 else 0) * curX.pow(n) / factorial(n)
+        ans += sammand
+        count++
+        n += 2
+    } while (abs(sammand) >= eps)
+    return ans
+}
 
 /**
  * Сложная (4 балла)
@@ -321,7 +325,41 @@ fun cos(x: Double, eps: Double): Double = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun squareSequenceDigit(n: Int): Int = TODO()
+fun squareSequenceDigit(n: Int): Int {
+
+    var curN = 0
+    var a = 1
+    var num = a * a
+
+    while (curN + digsInNum(num) < n) {
+        a++
+        curN += digsInNum(num)
+        num = a * a
+    }
+
+    curN += digsInNum(num)
+
+
+    while (curN != n) {
+        curN--
+        num /= 10
+    }
+    return num % 10
+
+}
+
+fun digsInNum(n: Int): Int {
+    if (n == 0)
+        return 1
+
+    var curN = n
+    var count = 0
+    while (curN > 0) {
+        count++
+        curN /= 10
+    }
+    return count
+}
 
 /**
  * Сложная (5 баллов)
@@ -332,4 +370,6 @@ fun squareSequenceDigit(n: Int): Int = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
+
+
 fun fibSequenceDigit(n: Int): Int = TODO()
