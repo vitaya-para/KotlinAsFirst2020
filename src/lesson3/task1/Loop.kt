@@ -130,13 +130,8 @@ fun minDivisor(n: Int): Int {
  *
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
-fun maxDivisor(n: Int): Int {
-    for (divisor in 2..sqrt(n.toDouble()).toInt()) {
-        if (n % divisor == 0)
-            return n / divisor
-    }
-    return 1
-}
+fun maxDivisor(n: Int) = n / minDivisor(n)
+
 
 /**
  * Простая (2 балла)
@@ -224,13 +219,13 @@ fun squareBetweenExists(m: Int, n: Int): Boolean = TODO()
 fun revert(n: Int): Int {
 
     var curN = abs(n)
-    var reserved = 0
+    var reversed = 0
 
     while (curN > 0) {
-        reserved = reserved * 10 + curN % 10
+        reversed = reversed * 10 + curN % 10
         curN /= 10
     }
-    return reserved
+    return reversed
 }
 
 /**
@@ -331,13 +326,13 @@ fun squareSequenceDigit(n: Int): Int {
     var a = 1
     var num = a * a
 
-    while (curN + digsInNum(num) < n) {
+    while (curN + digitNumber(num) < n) {
         a++
-        curN += digsInNum(num)
+        curN += digitNumber(num)
         num = a * a
     }
 
-    curN += digsInNum(num)
+    curN += digitNumber(num)
 
 
     while (curN != n) {
@@ -348,18 +343,7 @@ fun squareSequenceDigit(n: Int): Int {
 
 }
 
-fun digsInNum(n: Int): Int {
-    if (n == 0)
-        return 1
 
-    var curN = n
-    var count = 0
-    while (curN > 0) {
-        count++
-        curN /= 10
-    }
-    return count
-}
 
 /**
  * Сложная (5 баллов)
@@ -372,4 +356,24 @@ fun digsInNum(n: Int): Int {
  */
 
 
-fun fibSequenceDigit(n: Int): Int = TODO()
+fun fibSequenceDigit(n: Int): Int {
+
+    var curN = 0
+    var b = 0
+
+    while (curN + digitNumber(fib(b + 1)) < n) {
+
+        curN += digitNumber(fib(b + 1))
+        b++
+    }
+
+    var fibNum = fib(b + 1)
+    curN += digitNumber(fibNum)
+
+    while (curN != n) {
+        curN--
+        fibNum /= 10
+    }
+
+    return fibNum % 10
+}
