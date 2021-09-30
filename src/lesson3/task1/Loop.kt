@@ -359,15 +359,18 @@ fun squareSequenceDigit(n: Int): Int {
 fun fibSequenceDigit(n: Int): Int {
 
     var curN = 0
-    var b = 0
+    var b = 1
 
-    while (curN + digitNumber(fib(b + 1)) < n) {
+    var fibNum = fib(b)
+    while (curN + digitNumber(fibNum) < n) {
 
-        curN += digitNumber(fib(b + 1))
+        curN += digitNumber(fibNum)
         b++
+        fibNum = fib(b)
+
     }
 
-    var fibNum = fib(b + 1)
+    // var fibNum = fib(b + 1)
     curN += digitNumber(fibNum)
 
     while (curN != n) {
