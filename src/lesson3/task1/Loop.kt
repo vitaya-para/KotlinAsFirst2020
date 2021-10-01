@@ -74,12 +74,12 @@ fun digitCountInNumber(n: Int, m: Int): Int =
  */
 fun digitNumber(n: Int): Int {
     var num = abs(n)
-    var rez = 0
+    var res = 0
     do {
         num /= 10
-        rez++
+        res++
     } while (num > 0)
-    return rez
+    return res
 }
 
 /**
@@ -90,11 +90,11 @@ fun digitNumber(n: Int): Int {
  */
 
 fun fib(n: Int): Int {
-    val flag = n - 3
+    val size = n - 3
     var n1 = 1
     var n2 = 1
     var tmp: Int
-    for (i in 0..flag) {
+    for (i in 0..size) {
         tmp = n1 + n2
         n1 = n2
         n2 = tmp
@@ -194,15 +194,19 @@ fun squareBetweenExists(m: Int, n: Int): Boolean = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun revert(n: Int): Int {
+private fun runByNumber(n: Int, needLen: Boolean): Int {
+    //needLen = true    - return len of number
+    //needLen = false   - return reverting number
     var cp = n
-    var out = 0
+    var res = 0
     while (cp > 0) {
-        out = out * 10 + (cp % 10)
+        if (needLen) res++ else res = res * 10 + (cp % 10)
         cp /= 10
     }
-    return out
+    return res
 }
+
+fun revert(n: Int): Int = runByNumber(n, false)
 
 /**
  * Средняя (3 балла)
@@ -213,23 +217,15 @@ fun revert(n: Int): Int {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun getLen(n: Int): Int {
-    var cp = n
-    var len = 0
-    while (cp > 0) {
-        len++
-        cp /= 10
-    }
-    return len
-}
+fun getLen(n: Int): Int = runByNumber(n, true)
 
 fun isPalindrome(n: Int): Boolean {
     val len = getLen(n)
-    val rez = revert((n % 10.0.pow(len / 2)).toInt())
-    return (n / 10.0.pow(len - len / 2).toInt()) == rez * 10.0.pow(len / 2 - getLen(rez)).toInt()
+    val res = revert((n % 10.0.pow(len / 2)).toInt())
+    return (n / 10.0.pow(len - len / 2).toInt()) == res * 10.0.pow(len / 2 - getLen(res)).toInt()
 }
 
-/**
+/*
  * Средняя (3 балла)
  *
  * Для заданного числа n определить, содержит ли оно различающиеся цифры.
@@ -260,7 +256,7 @@ fun hasDifferentDigits(n: Int): Boolean {
 fun sin(x: Double, eps: Double): Double {
     val cp = x - (x / (2 * PI)).toInt() * (2 * PI)
     return when {
-        (cp >= 0 && cp < PI) || (cp >= 2 * PI && cp < 3 * PI) || (cp >= -2 * PI && cp < -PI) ->
+        (cp >= 0 && cp < PI) || (cp >= -2 * PI && cp < -PI) ->
             sqrt(1 - cos(cp, eps).pow(2))
         else -> -sqrt(1 - cos(cp, eps).pow(2))
     }
@@ -276,18 +272,18 @@ fun sin(x: Double, eps: Double): Double {
  * Использовать kotlin.math.cos и другие стандартные реализации функции косинуса в этой задаче запрещается.
  */
 fun nonUsualCos(x: Double, eps: Double): Double {
-    var rez = 0.0
+    var res = 0.0
     var memberOfNumber: Double
     var i = 0
     do {
         memberOfNumber = x.pow(i * 2) / factorial(i * 2)
-        rez += when (i % 2) {
+        res += when (i % 2) {
             0 -> memberOfNumber
             else -> -memberOfNumber
         }
         i++
     } while (memberOfNumber > eps)
-    return if (rez > 0.0) min(rez, 1.0) else max(rez, -1.0)
+    return if (res > 0.0) min(res, 1.0) else max(res, -1.0)
 }
 
 fun cos(x: Double, eps: Double): Double {
@@ -309,19 +305,37 @@ fun cos(x: Double, eps: Double): Double {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun squareSequenceDigit(n: Int): Int {
+
+private fun findNumInSequence(n: Int, mode: Boolean): Int {
+    //mode = true    - squareSequenceDigit
+    //mode = false   - fibSequenceDigit
+    if (!mode && (n == 1 || n == 2))
+        return 1
+    var n1 = 1
+    var i = if (mode) 0 else 1
+    var tmp: Int
     val need = n - 1
-    var haveChars = 0
-    var i = 1
+    var haveChars = if (mode) 0 else 2
     while (true) {
-        val len = getLen(i * i)
+        if (mode) {
+            i = i + 2 * sqrt(i.toDouble()).toInt() + 1 // x^2+2x+1
+        } else {
+            // считаю использование функции неуместным ввиду усложнения алгоритма из-за многократного "прогона" цикла
+            // от 0 до n-3 внутри функции fib
+            tmp = n1 + i
+            n1 = i
+            i = tmp
+        }
+        val len = getLen(i)
         if (haveChars + len > need) {
-            return ((i * i) / 10.0.pow(len - (need - haveChars) - 1).toInt()) % 10
+            return ((i) / 10.0.pow(len - (need - haveChars) - 1).toInt()) % 10
         }
         haveChars += len
-        i++
     }
+
 }
+
+fun squareSequenceDigit(n: Int): Int = findNumInSequence(n, true)
 
 /**
  * Сложная (5 баллов)
@@ -332,23 +346,4 @@ fun squareSequenceDigit(n: Int): Int {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun fibSequenceDigit(n: Int): Int {
-    if (n == 1 || n == 2)
-        return 1
-    var n1 = 1
-    var i = 1
-    var tmp: Int
-    val need = n - 1
-    var haveChars = 2
-
-    while (true) {
-        tmp = n1 + i
-        n1 = i
-        i = tmp
-        val len = getLen(i)
-        if (haveChars + len > need) {
-            return (i / 10.0.pow(len - (need - haveChars) - 1).toInt()) % 10
-        }
-        haveChars += len
-    }
-}
+fun fibSequenceDigit(n: Int): Int = findNumInSequence(n, false)

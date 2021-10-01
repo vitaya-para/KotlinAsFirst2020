@@ -67,6 +67,12 @@ fun circleInside(
     x2: Double, y2: Double, r2: Double
 ): Boolean = sqrt((x1 - x2).pow(2.0) + (y1 - y2).pow(2.0)) <= (r2 - r1)
 
+fun <T : Comparable<T>> avgOf(a: T, b: T, c: T): T = when {
+    a > c -> if (c > b) c else b
+    b > c -> if (a > c) a else c
+    else -> if (a > b) a else b
+}
+
 /**
  * Средняя (3 балла)
  *
@@ -77,4 +83,4 @@ fun circleInside(
  * Вернуть true, если кирпич пройдёт
  */
 fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean =
-    (minOf(a, b, c)) <= min(r, s) && (a + b + c - minOf(a, b, c) - maxOf(a, b, c)) <= max(r, s)
+    (minOf(a, b, c)) <= min(r, s) && (avgOf<Int>(a, b, c) <= max(r, s))

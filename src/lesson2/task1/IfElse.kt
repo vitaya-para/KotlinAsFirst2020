@@ -3,6 +3,7 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import lesson2.task2.avgOf
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
@@ -70,13 +71,12 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * Мой возраст. Для заданного 0 < n < 200, рассматриваемого как возраст человека,
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
-fun ageDescription(age: Int): String = when{
+fun ageDescription(age: Int): String = when {
     ((age % 100 > 10) && (age % 100 < 20)) -> "$age лет"
     else -> when (age % 10) {
         1 -> "$age год"
         in 2..4 -> "$age года"
-        in 5..9, 0 -> "$age лет"
-        else -> "ERROR"
+        else -> "$age лет"
     }
 }
 
@@ -156,7 +156,7 @@ fun rookOrBishopThreatens(
 fun triangleKind(a: Double, b: Double, c: Double): Int {
     val hypotenuse = maxOf(a, b, c)
     val minLeg = minOf(a, b, c)
-    val middleLeg = a + b + c - hypotenuse - minLeg
+    val middleLeg = avgOf<Double>(a, b, c)
     return when {
         (a >= b + c) or (b >= a + c) or (c >= a + b) -> -1
         hypotenuse < sqrt(minLeg.pow(2.0) + middleLeg.pow(2.0)) -> 0
