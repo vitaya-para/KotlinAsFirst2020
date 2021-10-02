@@ -330,12 +330,12 @@ fun roman(n: Int): String {
     for (i in 2 until nums.size) {
         val occurrence = cp / nums[i - 1]
         val occurrenceNext = cp / nums[i]
-        when (occurrenceNext) {
-            9 -> {
+        when {
+            occurrenceNext == 9 -> {
                 res += assoc(nums[i]) + assoc(nums[i - 2])
                 cp -= (nums[i - 2] - nums[i])
             }
-            4 -> {
+            occurrenceNext == 4 && occurrence != 2 -> {
                 res += assoc(nums[i]) + assoc(nums[i - 1])
                 cp -= (nums[i - 1] - nums[i])
             }
@@ -352,8 +352,9 @@ fun roman(n: Int): String {
             }
         }
     }
-    for (i in 1..cp)
+    for (i in 1..cp) {
         res += assoc(nums[6])
+    }
     return res
 }
 
@@ -410,6 +411,7 @@ private fun hundredsForThousand(n: Int): String = when {
     n % 10 == 2 && n % 100 != 12 -> (hundreds(n) + " ").replace("два ", "две тысячи")
     n == 1 -> "тысяча"
     n == 0 -> ""
+    n % 100 in 11..19 -> hundreds(n) + " тысяч"
     else -> when (n % 10) {
         in 2..4 -> hundreds(n) + " тысячи"
         else -> hundreds(n) + " тысяч"

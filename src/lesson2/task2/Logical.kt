@@ -68,10 +68,18 @@ fun circleInside(
 ): Boolean = sqrt((x1 - x2).pow(2.0) + (y1 - y2).pow(2.0)) <= (r2 - r1)
 
 fun <T : Comparable<T>> avgOf(a: T, b: T, c: T): T = when {
-    a > c -> if (c > b) c else b
-    b > c -> if (a > c) a else c
-    else -> if (a > b) a else b
+    a < b -> when {
+        a < c -> if (b < c) b else c
+        else -> a
+    }
+    a > c -> if (b > c) b else c
+    else -> a
 }
+//fun <T : Comparable<T>> avgOf(a: T, b: T, c: T): T = when {
+//    a > c -> if (c > b) b else c
+//    b > c -> if (a > c) a else c
+//    else -> if (a > b) a else b
+//}
 
 /**
  * Средняя (3 балла)
