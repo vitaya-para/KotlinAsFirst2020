@@ -4,6 +4,7 @@ package lesson4.task1
 
 import lesson1.task1.discriminant
 import kotlin.math.sqrt
+import  kotlin.math.pow
 
 // Урок 4: списки
 // Максимальное количество баллов = 12
@@ -127,7 +128,7 @@ fun abs(v: List<Double>): Double = TODO()
  *
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
-fun mean(list: List<Double>): Double = TODO()
+fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else list.sum() / list.size
 
 /**
  * Средняя (3 балла)
@@ -137,7 +138,14 @@ fun mean(list: List<Double>): Double = TODO()
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun center(list: MutableList<Double>): MutableList<Double> = TODO()
+fun center(list: MutableList<Double>): MutableList<Double> {
+
+    if (list.isNotEmpty()) {
+        val aver = list.sum() / list.size
+        list.map { it - aver }
+    }
+    return list
+}
 
 /**
  * Средняя (3 балла)
@@ -146,7 +154,18 @@ fun center(list: MutableList<Double>): MutableList<Double> = TODO()
  * представленные в виде списков a и b. Скалярное произведение считать по формуле:
  * C = a1b1 + a2b2 + ... + aNbN. Произведение пустых векторов считать равным 0.
  */
-fun times(a: List<Int>, b: List<Int>): Int = TODO()
+fun times(a: List<Int>, b: List<Int>): Int {
+
+    if (a.isEmpty())
+        return 0
+
+    var c = 0
+
+    for (i in 0..a.size)
+        c += a[i] * b[i]
+
+    return c
+}
 
 /**
  * Средняя (3 балла)
@@ -156,7 +175,18 @@ fun times(a: List<Int>, b: List<Int>): Int = TODO()
  * Коэффициенты многочлена заданы списком p: (p0, p1, p2, p3, ..., pN).
  * Значение пустого многочлена равно 0 при любом x.
  */
-fun polynom(p: List<Int>, x: Int): Int = TODO()
+fun polynom(p: List<Int>, x: Int): Int {
+
+    if (p.isEmpty())
+        return 0
+
+    var ans = 0
+    for (i in 0..p.size)
+        ans += p[i] * (x.toDouble().pow(i)).toInt()
+
+    return ans
+
+}
 
 /**
  * Средняя (3 балла)
@@ -168,7 +198,16 @@ fun polynom(p: List<Int>, x: Int): Int = TODO()
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun accumulate(list: MutableList<Int>): MutableList<Int> = TODO()
+fun accumulate(list: MutableList<Int>): MutableList<Int> {
+
+    if (list.isEmpty() || list.size == 1)
+        return list
+
+    for (i in 1..list.size)
+        list += list.subList(0, i)
+
+    return list
+}
 
 /**
  * Средняя (3 балла)
@@ -177,7 +216,29 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> = TODO()
  * Результат разложения вернуть в виде списка множителей, например 75 -> (3, 5, 5).
  * Множители в списке должны располагаться по возрастанию.
  */
-fun factorize(n: Int): List<Int> = TODO()
+fun factorize(n: Int): List<Int> {
+
+    var divs = mutableListOf<Int>()
+    var curN = n
+
+    while (curN != 1) {
+        var dig = 2
+        while (!(curN % dig == 0 && isSimple(dig)))
+            dig++
+        divs.add(dig)
+        curN /= dig
+    }
+    return divs.sorted()
+}
+
+fun isSimple(n: Int): Boolean {
+    for (i in 2..sqrt(n.toDouble()).toInt()) {
+        if (n % i == 0)
+            return false
+    }
+    return true
+}
+
 
 /**
  * Сложная (4 балла)
@@ -186,7 +247,7 @@ fun factorize(n: Int): List<Int> = TODO()
  * Результат разложения вернуть в виде строки, например 75 -> 3*5*5
  * Множители в результирующей строке должны располагаться по возрастанию.
  */
-fun factorizeToString(n: Int): String = TODO()
+fun factorizeToString(n: Int): String = factorize(n).joinToString(separator = "*")
 
 /**
  * Средняя (3 балла)
@@ -208,7 +269,20 @@ fun convert(n: Int, base: Int): List<Int> = TODO()
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, n.toString(base) и подобные), запрещается.
  */
-fun convertToString(n: Int, base: Int): String = TODO()
+fun convertToString(n: Int, base: Int): String {
+    var curN = n
+    val dig = curN % base
+
+    return if (n == 0)
+        ""
+    else {
+        if (dig >= 10)
+            convertToString(n / base, base) + (dig + 87).toChar()
+        else
+            convertToString(n / base, base) + dig
+    }
+}
+
 
 /**
  * Средняя (3 балла)
@@ -246,7 +320,7 @@ fun roman(n: Int): String = TODO()
 /**
  * Очень сложная (7 баллов)
  *
- * Записать заданное натуральное число 1..999999 прописью по-русски.
+ * Записать заданное натуральное число 1..999_999 прописью по-русски.
  * Например, 375 = "триста семьдесят пять",
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
