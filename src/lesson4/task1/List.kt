@@ -138,14 +138,7 @@ fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else list.sum() /
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun center(list: MutableList<Double>): MutableList<Double> {
-
-    if (list.isNotEmpty()) {
-        val aver = list.sum() / list.size
-        list.map { it - aver }
-    }
-    return list
-}
+fun center(list: MutableList<Double>): MutableList<Double> = TODO()
 
 /**
  * Средняя (3 балла)
@@ -161,7 +154,7 @@ fun times(a: List<Int>, b: List<Int>): Int {
 
     var c = 0
 
-    for (i in 0..a.size)
+    for (i in a.indices)
         c += a[i] * b[i]
 
     return c
@@ -181,7 +174,7 @@ fun polynom(p: List<Int>, x: Int): Int {
         return 0
 
     var ans = 0
-    for (i in 0..p.size)
+    for (i in p.indices)
         ans += p[i] * (x.toDouble().pow(i)).toInt()
 
     return ans
@@ -198,16 +191,8 @@ fun polynom(p: List<Int>, x: Int): Int {
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun accumulate(list: MutableList<Int>): MutableList<Int> {
+fun accumulate(list: MutableList<Int>): MutableList<Int> = TODO()
 
-    if (list.isEmpty() || list.size == 1)
-        return list
-
-    for (i in 1..list.size)
-        list += list.subList(0, i)
-
-    return list
-}
 
 /**
  * Средняя (3 балла)
@@ -218,7 +203,7 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
  */
 fun factorize(n: Int): List<Int> {
 
-    var divs = mutableListOf<Int>()
+    val divs = mutableListOf<Int>()
     var curN = n
 
     while (curN != 1) {
@@ -270,18 +255,26 @@ fun convert(n: Int, base: Int): List<Int> = TODO()
  * (например, n.toString(base) и подобные), запрещается.
  */
 fun convertToString(n: Int, base: Int): String {
-    var curN = n
-    val dig = curN % base
+    if (n == 0)
+        return "0"
 
-    return if (n == 0)
-        ""
-    else {
-        if (dig >= 10)
-            convertToString(n / base, base) + (dig + 87).toChar()
+    var curN = n
+    val allDigs = mutableListOf<String>()
+
+    while (curN > 0) {
+        val dig = curN % base
+        if (dig < 10)
+            allDigs.add(dig.toString())
         else
-            convertToString(n / base, base) + dig
+            allDigs.add((dig + 87).toChar().toString())
+
+        curN /= base
     }
+    allDigs.reverse()
+    return allDigs.joinToString(separator = "")
+
 }
+
 
 
 /**
