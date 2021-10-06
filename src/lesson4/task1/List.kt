@@ -3,6 +3,7 @@
 package lesson4.task1
 
 import lesson1.task1.discriminant
+import lesson3.task1.isPrime
 import kotlin.math.sqrt
 import  kotlin.math.pow
 
@@ -208,7 +209,7 @@ fun factorize(n: Int): List<Int> {
 
     while (curN != 1) {
         var dig = 2
-        while (!(curN % dig == 0 && isSimple(dig)))
+        while (curN % dig != 0)
             dig++
         divs.add(dig)
         curN /= dig
@@ -216,13 +217,7 @@ fun factorize(n: Int): List<Int> {
     return divs.sorted()
 }
 
-fun isSimple(n: Int): Boolean {
-    for (i in 2..sqrt(n.toDouble()).toInt()) {
-        if (n % i == 0)
-            return false
-    }
-    return true
-}
+
 
 
 /**
