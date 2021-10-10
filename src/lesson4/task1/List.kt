@@ -129,10 +129,7 @@ fun abs(v: List<Double>): Double =
  *
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
-fun mean(list: List<Double>): Double = when (list.isEmpty()) {
-    true -> 0.0
-    else -> list.fold(0.0) { previousResult, element -> previousResult + element } / list.size
-}
+fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else list.sum() / list.size
 
 /**
  * Средняя (3 балла)
@@ -208,15 +205,15 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
  * Множители в списке должны располагаться по возрастанию.
  */
 fun factorize(n: Int): List<Int> {
-    val arr = MutableList(sqrt(n.toDouble()).toInt() + 1) { true }
+    val thisNumberIsPrime = MutableList(sqrt(n.toDouble()).toInt() + 1) { true }
     val res = mutableListOf<Int>()
     var cp = n
-    arr[0] = false
-    arr[1] = false
-    for (i in 2 until arr.size) {
-        if (arr[i]) {
-            for (j in 2 * i until arr.size step i)
-                arr[j] = false
+    thisNumberIsPrime[0] = false
+    thisNumberIsPrime[1] = false
+    for (i in 2 until thisNumberIsPrime.size) {
+        if (thisNumberIsPrime[i]) {
+            for (j in 2 * i until thisNumberIsPrime.size step i)
+                thisNumberIsPrime[j] = false
             while (cp % i == 0) {
                 cp /= i
                 res.add(i)
@@ -266,7 +263,7 @@ fun convert(n: Int, base: Int): List<Int> {
  * (например, n.toString(base) и подобные), запрещается.
  */
 fun convertToString(n: Int, base: Int): String = convert(n, base).fold("")
-{ previousResult, element -> if (element < 10) previousResult + element else previousResult + (87 + element).toChar() }
+{ previousResult, element -> if (element < 10) previousResult + element else previousResult + ('a'.code - 10 + element).toChar() }
 
 /**
  * Средняя (3 балла)
@@ -298,7 +295,7 @@ fun decimal(digits: List<Int>, base: Int): Int {
  * (например, str.toInt(base)), запрещается.
  */
 fun decimalFromString(str: String, base: Int): Int = decimal(
-    str.toList().map { if (it.code < 'a'.code) it.code - '0'.code else it.code - 87 },
+    str.toList().map { if (it.code < 'a'.code) it.code - '0'.code else it.code - ('a'.code - 10) },
     base
 )
 
@@ -310,19 +307,18 @@ fun decimalFromString(str: String, base: Int): Int = decimal(
  * 90 = XC, 100 = C, 400 = CD, 500 = D, 900 = CM, 1000 = M.
  * Например: 23 = XXIII, 44 = XLIV, 100 = C
  */
-private fun assoc(n: Int): String = when (n) {
-    //association
-    1 -> "I"
-    5 -> "V"
-    10 -> "X"
-    50 -> "L"
-    100 -> "C"
-    500 -> "D"
-    else -> "M"
-}
 
 fun roman(n: Int): String {
     val nums = listOf(1000, 500, 100, 50, 10, 5, 1)
+    val assoc = mapOf<Int, String>(
+        1 to "I",
+        5 to "V",
+        10 to "X",
+        50 to "L",
+        100 to "C",
+        500 to "D",
+        1000 to "M"
+    )
     var cp = n
     var res = ""
     res = res.padEnd(cp / 1000, 'M')
@@ -332,28 +328,28 @@ fun roman(n: Int): String {
         val occurrenceNext = cp / nums[i]
         when {
             occurrenceNext == 9 -> {
-                res += assoc(nums[i]) + assoc(nums[i - 2])
+                res += assoc[nums[i]] + assoc[nums[i - 2]]
                 cp -= (nums[i - 2] - nums[i])
             }
             occurrenceNext == 4 && occurrence != 2 -> {
-                res += assoc(nums[i]) + assoc(nums[i - 1])
+                res += assoc[nums[i]] + assoc[nums[i - 1]]
                 cp -= (nums[i - 1] - nums[i])
             }
             else -> when (occurrence) {
                 4 -> {
-                    res += assoc(nums[i - 1]) + assoc(nums[i - 2])
+                    res += assoc[nums[i - 1]] + assoc[nums[i - 2]]
                     cp -= (nums[i - 2] - nums[i - 1])
                 }
                 else -> {
                     for (j in 0 until occurrence)
-                        res += assoc(nums[i - 1])
+                        res += assoc[nums[i - 1]]
                     cp %= nums[i - 1]
                 }
             }
         }
     }
     for (i in 1..cp) {
-        res += assoc(nums[6])
+        res += assoc[nums[6]]
     }
     return res
 }
@@ -365,56 +361,57 @@ fun roman(n: Int): String {
  * Например, 375 = "триста семьдесят пять",
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
-private fun units(n: Int): String = when (n) {
-    0 -> ""
-    1 -> "один"
-    2 -> "два"
-    3 -> "три"
-    4 -> "четыре"
-    5 -> "пять"
-    6 -> "шесть"
-    7 -> "семь"
-    8 -> "восемь"
-    else -> "девять"
-}
-
 private fun hundreds(n: Int): String {
+    val units = listOf<String>(
+        "",
+        "один",
+        "два",
+        "три",
+        "четыре",
+        "пять",
+        "шесть",
+        "семь",
+        "восемь",
+        "девять",
+    )
     var res = when (n / 100) {
         0 -> ""
         1 -> "сто"
         2 -> "двести"
-        in 3..4 -> units(n / 100) + "ста"
-        else -> units(n / 100) + "сот"
+        in 3..4 -> units[n / 100] + "ста"
+        else -> units[n / 100] + "сот"
     }
     res += " "
     if (n % 100 in 11..19) {
         res += when (n % 10) {
             2 -> "двенадцать"
             4 -> "четырнадцать"
-            else -> units(n % 10).replace("ь", "") + "надцать"
+            else -> units[n % 10].replace("ь", "") + "надцать"
         }
     } else {
         res += when ((n % 100) / 10) {
             0 -> ""
-            2, 3 -> units((n % 100) / 10) + "дцать "
+            2, 3 -> units[(n % 100) / 10] + "дцать "
             4 -> "сорок "
-            in 5..8 -> units((n % 100) / 10) + "десят "
+            in 5..8 -> units[(n % 100) / 10] + "десят "
             else -> "девяносто "
         }
-        res += units(n % 10)
+        res += units[n % 10]
     }
     return res.trim(' ')
 }
 
-private fun hundredsForThousand(n: Int): String = when {
-    n % 10 == 1 && n % 100 != 11 -> hundreds(n).replace("один", "одна тысяча")
-    n % 10 == 2 && n % 100 != 12 -> (hundreds(n) + " ").replace("два ", "две тысячи")
-    n == 1 -> "тысяча"
-    n == 0 -> ""
-    n % 100 in 11..19 -> hundreds(n) + " тысяч"
-    else -> when (n % 10) {
-        in 2..4 -> hundreds(n) + " тысячи"
-        else -> hundreds(n) + " тысяч"
+private fun hundredsForThousand(n: Int): String {
+    if (n == 0) return ""
+    if (n == 1) return "тысяча"
+    val preRes = hundreds(n)
+    return if(n % 100 in 11..19)
+        "$preRes тысяч"
+    else when (n % 10) {
+        1 -> preRes.replace("один", "одна тысяча")
+        2 -> ("$preRes ").replace("два ", "две тысячи")
+        in 2..4 -> "$preRes тысячи"
+        else -> "$preRes тысяч"
     }
 }
 

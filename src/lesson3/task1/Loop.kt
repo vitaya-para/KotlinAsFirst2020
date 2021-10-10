@@ -109,7 +109,7 @@ fun fib(n: Int): Int {
  */
 fun minDivisor(n: Int): Int {
     var ret = n
-    for (i in 2..sqrt(n * 1.0).toInt()) {
+    for (i in 2..sqrt(n.toDouble()).toInt()) {
         if (n % i == 0) {
             ret = i
             break
@@ -194,19 +194,17 @@ fun squareBetweenExists(m: Int, n: Int): Boolean = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-private fun runByNumber(n: Int, needLen: Boolean): Int {
-    //needLen = true    - return len of number
-    //needLen = false   - return reverting number
+private fun runByNumber(n: Int, lam: (Int, Int) -> Int): Int {
     var cp = n
     var res = 0
     while (cp > 0) {
-        if (needLen) res++ else res = res * 10 + (cp % 10)
+        res = lam(res, cp)
         cp /= 10
     }
     return res
 }
 
-fun revert(n: Int): Int = runByNumber(n, false)
+fun revert(n: Int): Int = runByNumber(n) { res: Int, cp: Int -> res * 10 + (cp % 10) }
 
 /**
  * Средняя (3 балла)
@@ -217,7 +215,7 @@ fun revert(n: Int): Int = runByNumber(n, false)
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun getLen(n: Int): Int = runByNumber(n, true)
+fun getLen(n: Int): Int = runByNumber(n) { res: Int, cp: Int -> res + 1 }
 
 fun isPalindrome(n: Int): Boolean {
     val len = getLen(n)
@@ -253,10 +251,11 @@ fun hasDifferentDigits(n: Int): Boolean {
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.sin и другие стандартные реализации функции синуса в этой задаче запрещается.
  */
+private fun normalisation(x: Double): Double = x - (x / (2 * PI)).toInt() * (2 * PI)
 fun sin(x: Double, eps: Double): Double {
-    val cp = x - (x / (2 * PI)).toInt() * (2 * PI)
+    val cp = normalisation(x)
     return when {
-        (cp >= 0 && cp < PI) || (cp >= -2 * PI && cp < -PI) ->
+        (cp >= 0 && cp < PI) || (cp > -2 * PI && cp < -PI) ->
             sqrt(1 - cos(cp, eps).pow(2))
         else -> -sqrt(1 - cos(cp, eps).pow(2))
     }
@@ -287,7 +286,7 @@ fun nonUsualCos(x: Double, eps: Double): Double {
 }
 
 fun cos(x: Double, eps: Double): Double {
-    val cp = x - (x / (2 * PI)).toInt() * (2 * PI)
+    val cp = normalisation(x)
     return when (cp) {
         0.0 -> 1.0
         PI / 2.0, 3.0 * PI / 2.0 -> 0.0
@@ -305,37 +304,20 @@ fun cos(x: Double, eps: Double): Double {
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-
-private fun findNumInSequence(n: Int, mode: Boolean): Int {
-    //mode = true    - squareSequenceDigit
-    //mode = false   - fibSequenceDigit
-    if (!mode && (n == 1 || n == 2))
-        return 1
-    var n1 = 1
-    var i = if (mode) 0 else 1
-    var tmp: Int
+private fun getLastDigital(i: Int, pos: Int): Int = (i / 10.0.pow(pos - 1).toInt()) % 10
+fun squareSequenceDigit(n: Int): Int {
     val need = n - 1
-    var haveChars = if (mode) 0 else 2
+    var haveChars = 0
+    var i = 1
     while (true) {
-        if (mode) {
-            i = i + 2 * sqrt(i.toDouble()).toInt() + 1 // x^2+2x+1
-        } else {
-            // считаю использование функции неуместным ввиду усложнения алгоритма из-за многократного "прогона" цикла
-            // от 0 до n-3 внутри функции fib
-            tmp = n1 + i
-            n1 = i
-            i = tmp
-        }
-        val len = getLen(i)
+        val len = getLen(i * i)
         if (haveChars + len > need) {
-            return ((i) / 10.0.pow(len - (need - haveChars) - 1).toInt()) % 10
+            return getLastDigital(i * i, len - (need - haveChars))
         }
         haveChars += len
+        i++
     }
-
 }
-
-fun squareSequenceDigit(n: Int): Int = findNumInSequence(n, true)
 
 /**
  * Сложная (5 баллов)
@@ -346,4 +328,23 @@ fun squareSequenceDigit(n: Int): Int = findNumInSequence(n, true)
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun fibSequenceDigit(n: Int): Int = findNumInSequence(n, false)
+fun fibSequenceDigit(n: Int): Int {
+    if (n == 1 || n == 2)
+        return 1
+    var n1 = 1
+    var i = 1
+    var tmp: Int
+    val need = n - 1
+    var haveChars = 2
+
+    while (true) {
+        tmp = n1 + i
+        n1 = i
+        i = tmp
+        val len = getLen(i)
+        if (haveChars + len > need) {
+            return getLastDigital(i, len - (need - haveChars))
+        }
+        haveChars += len
+    }
+}
