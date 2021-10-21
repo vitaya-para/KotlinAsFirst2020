@@ -130,7 +130,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO() /* {
 
 fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
 
-    for ((key, value) in a) {
+    for (key in a.keys) {
         if (!(b.containsKey(key) && a[key] == b[key]))
             return false
     }
@@ -200,8 +200,8 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
     if (stockPrices.isEmpty())
         return mapOf()
 
-    var shares = mutableMapOf<String, Double>()
-    var count = mutableMapOf<String, Double>()
+    val shares = mutableMapOf<String, Double>()
+    val count = mutableMapOf<String, Double>()
 
     for ((company, cost) in stockPrices) {
 
@@ -336,16 +336,22 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
     if (list.isEmpty())
         return Pair(-1, -1)
 
-    val sorted = list.sorted()
+    val checked = mutableListOf<Int>()
 
     for (first in list.indices) {
-        val second = sorted.binarySearch(number - sorted[first])
-        if (second >= 0 && first != second)
-            return Pair(first, second)
+        if (list[first] > number) {
+            if (!checked.contains(number))
+                checked.add(number)
+            continue
+        }
 
+        val subList = list.subList(first + 1, list.size)
+        if (subList.contains(number - list[first]))
+            return Pair(first, subList.indexOf(number - list[first]) + first + 1)
+        else
+            checked.add(list[first])
     }
     return Pair(-1, -1)
-
 }
 
 /**
