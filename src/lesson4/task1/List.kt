@@ -139,7 +139,8 @@ fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else list.sum() /
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun center(list: MutableList<Double>): MutableList<Double> = TODO()
+fun center(list: MutableList<Double>): MutableList<Double> =
+    if (list.isEmpty()) list else list.toList().map { it - list.sum() / list.size }.toMutableList()
 
 /**
  * Средняя (3 балла)
@@ -218,8 +219,6 @@ fun factorize(n: Int): List<Int> {
 }
 
 
-
-
 /**
  * Сложная (4 балла)
  *
@@ -271,7 +270,6 @@ fun convertToString(n: Int, base: Int): String {
 }
 
 
-
 /**
  * Средняя (3 балла)
  *
@@ -293,18 +291,25 @@ fun decimal(digits: List<Int>, base: Int): Int = TODO()
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, str.toInt(base)), запрещается.
  */
-fun decimalFromString(str: String, base: Int): Int = TODO()
+fun decimalFromString(str: String, base: Int): Int {
+    var ans = 0
+    for (i in str.indices) {
+        val dig = if (str[i].code >= 97) str[i].code - 87 else str[i].code - 48
+        ans += dig * base.toDouble().pow(str.length - i - 1).toInt()
+    }
+
+    return ans
+}
 
 /**
  * Сложная (5 баллов)
  *
  * Перевести натуральное число n > 0 в римскую систему.
- * Римские цифры: 1 = I, 4 = IV, 5 = V, 9 = IX, 10 = X, 40 = XL, 50 = L,
+ * Римские цифры: 1 = ,I 4 = IV, 5 = V, 9 = IX, 10 = X, 40 = XL, 50 = L,
  * 90 = XC, 100 = C, 400 = CD, 500 = D, 900 = CM, 1000 = M.
  * Например: 23 = XXIII, 44 = XLIV, 100 = C
  */
 fun roman(n: Int): String = TODO()
-
 /**
  * Очень сложная (7 баллов)
  *
