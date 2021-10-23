@@ -149,9 +149,6 @@ fun center(list: MutableList<Double>): MutableList<Double> = TODO()
  */
 fun times(a: List<Int>, b: List<Int>): Int {
 
-    if (a.isEmpty())
-        return 0
-
     var c = 0
 
     for (i in a.indices)
@@ -170,12 +167,12 @@ fun times(a: List<Int>, b: List<Int>): Int {
  */
 fun polynom(p: List<Int>, x: Int): Int {
 
-    if (p.isEmpty())
-        return 0
-
     var ans = 0
-    for (i in p.indices)
-        ans += p[i] * (x.toDouble().pow(i)).toInt()
+    var xPow = 1
+    for (elem in p) {
+        ans += elem * xPow
+        xPow *= x
+    }
 
     return ans
 
@@ -212,8 +209,12 @@ fun factorize(n: Int): List<Int> {
             dig++
         divs.add(dig)
         curN /= dig
+        if (isPrime(curN)) {
+            divs.add(curN)
+            break
+        }
     }
-    return divs.sorted()
+    return divs
 }
 
 
@@ -258,7 +259,7 @@ fun convertToString(n: Int, base: Int): String {
         if (dig < 10)
             allDigs.add(dig.toString())
         else
-            allDigs.add((dig + 87).toChar().toString())
+            allDigs.add(('a' + dig - 10).toString())
 
         curN /= base
     }
@@ -291,9 +292,12 @@ fun decimal(digits: List<Int>, base: Int): Int = TODO()
  */
 fun decimalFromString(str: String, base: Int): Int {
     var ans = 0
+    var digPow = str.length - 1
+
     for (i in str.indices) {
-        val dig = if (str[i].code >= 97) str[i].code - 87 else str[i].code - 48
-        ans += dig * base.toDouble().pow(str.length - i - 1).toInt()
+        val dig = if (str[i] >= 'a') str[i] - 'a' + 10 else str[i] - '0'
+        ans += dig * base.toDouble().pow(digPow).toInt()
+        digPow--
     }
 
     return ans
