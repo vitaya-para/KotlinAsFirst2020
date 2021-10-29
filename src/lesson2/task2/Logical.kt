@@ -67,6 +67,11 @@ fun circleInside(
     x2: Double, y2: Double, r2: Double
 ): Boolean = sqrt((x1 - x2).pow(2.0) + (y1 - y2).pow(2.0)) <= (r2 - r1)
 
+/**
+ * Функция avgOf принимает 3 параметра типа Т, который должен быть сравнимым. Параметр Т указывается явно в <...>
+ * Пример: запись avgOf<Int>(a, b, c) аналог "обычной" функции вида:
+ * fun avgOf(a: Int, b: Int, c: Int): Int = ...
+ */
 fun <T : Comparable<T>> avgOf(a: T, b: T, c: T): T =
     when (minOf(a, b, c)) {
         a -> minOf(b, c)

@@ -263,7 +263,7 @@ fun convert(n: Int, base: Int): List<Int> {
  * (например, n.toString(base) и подобные), запрещается.
  */
 fun convertToString(n: Int, base: Int): String = convert(n, base).fold("")
-{ previousResult, element -> if (element < 10) previousResult + element else previousResult + ('a'.code - 10 + element).toChar() }
+{ previousResult, element -> if (element < 10) previousResult + element else previousResult + ('a' - 10 + element) }
 
 /**
  * Средняя (3 балла)
@@ -295,7 +295,7 @@ fun decimal(digits: List<Int>, base: Int): Int {
  * (например, str.toInt(base)), запрещается.
  */
 fun decimalFromString(str: String, base: Int): Int = decimal(
-    str.toList().map { if (it.code < 'a'.code) it.code - '0'.code else it.code - ('a'.code - 10) },
+    str.toList().map { if (it.code < 'a'.code) it.code - '0'.code else it - 'a' + 10 },
     base
 )
 
@@ -320,38 +320,41 @@ fun roman(n: Int): String {
         1000 to "M"
     )
     var cp = n
-    var res = ""
-    res = res.padEnd(cp / 1000, 'M')
-    cp %= 1000
-    for (i in 2 until nums.size) {
-        val occurrence = cp / nums[i - 1]
-        val occurrenceNext = cp / nums[i]
-        when {
-            occurrenceNext == 9 -> {
-                res += assoc[nums[i]] + assoc[nums[i - 2]]
-                cp -= (nums[i - 2] - nums[i])
-            }
-            occurrenceNext == 4 && occurrence != 2 -> {
-                res += assoc[nums[i]] + assoc[nums[i - 1]]
-                cp -= (nums[i - 1] - nums[i])
-            }
-            else -> when (occurrence) {
-                4 -> {
-                    res += assoc[nums[i - 1]] + assoc[nums[i - 2]]
-                    cp -= (nums[i - 2] - nums[i - 1])
+    return buildString {
+        append(padEnd(cp / 1000, 'M'))
+        cp %= 1000
+        for (i in 2 until nums.size) {
+            val occurrence = cp / nums[i - 1]
+            val occurrenceNext = cp / nums[i]
+            when {
+                occurrenceNext == 9 -> {
+                    append(assoc[nums[i]] + assoc[nums[i - 2]])
+                    cp -= (nums[i - 2] - nums[i])
                 }
-                else -> {
-                    for (j in 0 until occurrence)
-                        res += assoc[nums[i - 1]]
-                    cp %= nums[i - 1]
+                // в случае если occurrence будет 2, нам будет более "выгодно" заменить на символы, связанные с ним, нежели
+                // с occurrenceNext (предполагается, что в последовательности MDCLXVI occurrence отвечает за более ранний символ,
+                // а occurrenceNext за последующий (если occurrence ~ M, то occurrenceNext ~ D))
+                occurrenceNext == 4 && occurrence != 2 -> {
+                    append(assoc[nums[i]] + assoc[nums[i - 1]])
+                    cp -= (nums[i - 1] - nums[i])
+                }
+                else -> when (occurrence) {
+                    4 -> {
+                        append(assoc[nums[i - 1]] + assoc[nums[i - 2]])
+                        cp -= (nums[i - 2] - nums[i - 1])
+                    }
+                    else -> {
+                        for (j in 0 until occurrence)
+                            append(assoc[nums[i - 1]])
+                        cp %= nums[i - 1]
+                    }
                 }
             }
         }
+        for (i in 1..cp) {
+            append(assoc[nums[6]])
+        }
     }
-    for (i in 1..cp) {
-        res += assoc[nums[6]]
-    }
-    return res
 }
 
 /**
@@ -405,7 +408,7 @@ private fun hundredsForThousand(n: Int): String {
     if (n == 0) return ""
     if (n == 1) return "тысяча"
     val preRes = hundreds(n)
-    return if(n % 100 in 11..19)
+    return if (n % 100 in 11..19)
         "$preRes тысяч"
     else when (n % 10) {
         1 -> preRes.replace("один", "одна тысяча")
