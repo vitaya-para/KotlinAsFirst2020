@@ -2,6 +2,10 @@
 
 package lesson6.task1
 
+import lesson2.task2.daysInMonth
+import lesson4.task1.roman
+import kotlin.math.max
+
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
 // Рекомендуемое количество баллов = 11
@@ -74,7 +78,34 @@ fun main() {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
-fun dateStrToDigit(str: String): String = TODO()
+
+fun dateStrToDigit(str: String): String {
+    val date = str.split(' ')
+    if (date.size != 3) return ""
+    val month = when (date[1]) {
+        "января" -> 1
+        "февраля" -> 2
+        "марта" -> 3
+        "апреля" -> 4
+        "мая" -> 5
+        "июня" -> 6
+        "июля" -> 7
+        "августа" -> 8
+        "сентября" -> 9
+        "октября" -> 10
+        "ноября" -> 11
+        "декабря" -> 12
+        else -> null
+    } ?: return ""
+    try {
+        if (date[0].toInt() < 1 ||
+            date[0].toInt() > daysInMonth(month, date[2].toInt())
+        ) return ""
+        return String.format("%02d.%02d.%s", date[0].toInt(), month, date[2])
+    } catch (e: NumberFormatException) {
+        return ""
+    }
+}
 
 /**
  * Средняя (4 балла)
@@ -102,7 +133,13 @@ fun dateDigitToStr(digital: String): String = TODO()
  *
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
-fun flattenPhoneNumber(phone: String): String = TODO()
+fun flattenPhoneNumber(phone: String): String {
+    //проверка на наличие () и символов отличных от 0-9, ' ', + и минуса
+    if (Regex("""\(\)|[^0-9- ()+]""").find(phone) != null) return ""
+    var str = ""
+    Regex("""[+]?[0-9]+""").findAll(phone).forEach { str += it.value }
+    return str
+}
 
 /**
  * Средняя (5 баллов)
@@ -114,7 +151,12 @@ fun flattenPhoneNumber(phone: String): String = TODO()
  * Прочитать строку и вернуть максимальное присутствующее в ней число (717 в примере).
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
-fun bestLongJump(jumps: String): Int = TODO()
+fun bestLongJump(jumps: String): Int {
+    if (Regex("""[^0-9- %]""").find(jumps) != null) return -1
+    var myMax = -1
+    Regex("[0-9]+").findAll(jumps).forEach { myMax = max(myMax, it.value.toIntOrNull()!!) }
+    return myMax
+}
 
 /**
  * Сложная (6 баллов)
@@ -127,7 +169,13 @@ fun bestLongJump(jumps: String): Int = TODO()
  * При нарушении формата входной строки, а также в случае отсутствия удачных попыток,
  * вернуть -1.
  */
-fun bestHighJump(jumps: String): Int = TODO()
+fun bestHighJump(jumps: String): Int {
+    if (Regex("""[^0-9- %+]""").find(jumps) != null) return -1
+    var myMax = -1
+    //получаем все успешные результаты и сравниваем с максимумом подстроку до символа пробел
+    Regex("[0-9]+ [+]").findAll(jumps).forEach { myMax = max(myMax, it.value.substringBefore(' ').toIntOrNull()!!) }
+    return myMax
+}
 
 /**
  * Сложная (6 баллов)
@@ -138,7 +186,39 @@ fun bestHighJump(jumps: String): Int = TODO()
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int = TODO()
+fun plusMinus(expression: String): Int {
+    //считаю, что запись вида - 2 + 1 является некорректной
+    if (Regex("""[^0-9 +-]""").find(expression) != null)
+        throw IllegalArgumentException("Error")
+
+    var isNum = true
+    var plus = true
+    var res = 0
+
+    val numsPlusMinus = Regex("""[0-9]+|[+-]""").findAll(expression)
+    for (i in numsPlusMinus) {
+        val tmp = i.value
+
+        if (((tmp != "+") && (tmp != "-") && !isNum) || ((tmp == "-") && isNum) || ((tmp == "+") && isNum))
+            throw IllegalArgumentException("Error")
+
+        if (isNum)
+            when (plus) {
+                true -> res += tmp.toIntOrNull()!!
+                else -> res -= tmp.toIntOrNull()!!
+            }
+        else
+            when (tmp) {
+                "+" -> plus = true
+                else -> plus = false
+            }
+        isNum = !isNum
+    }
+    //проверка на отсутствие в конце строки знака +/-
+    if (isNum)
+        throw IllegalArgumentException("Error")
+    return res
+}
 
 /**
  * Сложная (6 баллов)
@@ -149,7 +229,19 @@ fun plusMinus(expression: String): Int = TODO()
  * Вернуть индекс начала первого повторяющегося слова, или -1, если повторов нет.
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
-fun firstDuplicateIndex(str: String): Int = TODO()
+fun firstDuplicateIndex(str: String): Int {
+    val data = str.uppercase().split(' ')
+    var pos = 0
+    var lastWord = ""
+
+    for (i in data.indices) {
+        if (data[i] == lastWord)
+            return (pos - lastWord.length - 1)
+        pos += data[i].length + 1
+        lastWord = data[i]
+    }
+    return -1
+}
 
 /**
  * Сложная (6 баллов)
@@ -162,7 +254,22 @@ fun firstDuplicateIndex(str: String): Int = TODO()
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше нуля либо равны нулю.
  */
-fun mostExpensive(description: String): String = TODO()
+fun mostExpensive(description: String): String {
+    val pairs = Regex("""[^ ]+ ([0-9]+(([.]|[,])[0-9]+)?)(([;][ ]|$))""").findAll(description)
+
+    var sz = 0
+    pairs.forEach { sz += it.value.length }
+    if (sz != description.length) return ""
+
+    var max = Pair("", -1.0)
+    for (i in pairs) {
+        val myPair = i.value.trim(' ', ';').split(' ')
+        if (max.second < myPair[1].toFloat())
+            max = Pair(myPair[0], myPair[1].toDouble())
+    }
+
+    return max.first
+}
 
 /**
  * Сложная (6 баллов)
@@ -175,7 +282,33 @@ fun mostExpensive(description: String): String = TODO()
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int = TODO()
+fun fromRoman(roman: String): Int {
+    if (Regex("""[^IVXLCDM]""").find(roman) != null) return -1
+    val assoc = mapOf<Char, Int>(
+        'I' to 1,
+        'V' to 5,
+        'X' to 10,
+        'L' to 50,
+        'C' to 100,
+        'D' to 500,
+        'M' to 1000
+    )
+    if (roman.length == 1) return assoc[roman[0]]!!
+
+    var res = assoc[roman[1]]!!
+    //проверяем наличие п.2 из цикла до его начала (XL)
+    res += if (res > assoc[roman[0]]!!) -assoc[roman[0]]!! else assoc[roman[0]]!!
+    for (i in 2 until roman.length) {
+        //обработка двух цифр, идущих подряд, сумма которых меньше i-го символа (IIV)
+        if (roman[i - 1] == roman[i - 2] && 2 * assoc[roman[i - 1]]!! < assoc[roman[i]]!!)
+            res = res - 4 * assoc[roman[i - 1]]!! + assoc[roman[i]]!!
+        else if (assoc[roman[i - 1]]!! < assoc[roman[i]]!!) //обработка одного числа, которое меньше i-го (IV) (п.2)
+            res = res - 2 * assoc[roman[i - 1]]!! + assoc[roman[i]]!!
+        else
+            res += assoc[roman[i]]!! //это база
+    }
+    return if (roman(res) == roman) res else -1
+}
 
 /**
  * Очень сложная (7 баллов)
@@ -213,4 +346,66 @@ fun fromRoman(roman: String): Int = TODO()
  * IllegalArgumentException должен бросаться даже если ошибочная команда не была достигнута в ходе выполнения.
  *
  */
-fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> = TODO()
+fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
+    val bracketOpenMap = mutableMapOf<Int, Int>()
+    val needIndex = ArrayDeque<Int>()
+    //проверка корректности данных
+    var steps = 0
+    for (i in commands.indices) {
+        when (commands[i]) {
+            '[' -> {
+                steps++
+                needIndex.addLast(i)
+            }
+            ']' -> {
+                steps--
+                if (steps >= 0) {
+                    bracketOpenMap[needIndex.last()] = i
+                    needIndex.removeLast()
+                } else
+                    throw IllegalArgumentException("Error")
+            }
+            '+', '-', ' ', '<', '>' -> continue
+            else -> throw IllegalArgumentException("Error")
+        }
+    }
+    if (steps != 0) throw IllegalArgumentException("Error")
+
+
+    val bracketCloseMap = bracketOpenMap.entries.associateBy({ it.value }) { it.key }
+    val table = MutableList(cells) { 0 }
+    steps = limit
+    var pos = cells / 2
+    var i = 0
+    while (i < commands.length) {
+        when (commands[i]) {
+            '+' -> table[pos]++
+            '-' -> table[pos]--
+            '>' -> {
+                pos++
+                if (pos >= cells)
+                    throw IllegalStateException("Error")
+            }
+            '<' -> {
+                pos--
+                if (pos < 0)
+                    throw IllegalStateException("Error")
+            }
+            '[' -> {
+                if (table[pos] == 0)
+                    i = bracketOpenMap[i]!!
+            }
+            ']' -> {
+                if (table[pos] != 0)
+                    i = bracketCloseMap[i]!! - 1
+            }
+            ' ' -> steps++
+        }
+        if (steps > 1)
+            steps--
+        else
+            return table
+        ++i
+    }
+    return table
+}
