@@ -4,6 +4,8 @@ package lesson6.task1
 
 import java.lang.Exception
 import java.lang.IllegalArgumentException
+import java.util.*
+
 
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
@@ -152,9 +154,11 @@ fun plusMinus(expression: String): Int {
         var result = parts[0].toInt()
 
         for (i in 1 until parts.size step 2) {
-            if (parts[i] == "+" && parts[i + 1].length == parts[i + 1].toInt().toString().length)
+            if (parts[i + 1].length > 1 && parts[i + 1].first() !in '1'..'9')
+                throw Exception("")
+            if (parts[i] == "+")
                 result += parts[i + 1].toInt()
-            else if (parts[i] == "-" && parts[i + 1].length == parts[i + 1].toInt().toString().length)
+            else if (parts[i] == "-")
                 result -= parts[i + 1].toInt()
             else
                 throw Exception("")
@@ -176,7 +180,21 @@ fun plusMinus(expression: String): Int {
  * Вернуть индекс начала первого повторяющегося слова, или -1, если повторов нет.
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
-fun firstDuplicateIndex(str: String): Int = TODO()
+fun firstDuplicateIndex(str: String): Int {
+    try {
+        val words = str.lowercase(Locale.getDefault()).split(" ")
+        var index = words[0].length + 1
+
+        for (i in 1 until words.size) {
+            if (words[i] == words[i - 1])
+                return index - words[i].length - 1
+            index += words[i].length + 1
+        }
+        return -1
+    } catch (e: Exception) {
+        return -1
+    }
+}
 
 /**
  * Сложная (6 баллов)
