@@ -152,9 +152,9 @@ fun plusMinus(expression: String): Int {
         var result = parts[0].toInt()
 
         for (i in 1 until parts.size step 2) {
-            if (parts[i] == "+" && parts[i + 1].first().code in ('1'.code..'9'.code))
+            if (parts[i] == "+" && parts[i + 1].length == parts[i + 1].toInt().toString().length)
                 result += parts[i + 1].toInt()
-            else if (parts[i] == "-" && parts[i + 1].first().code in ('1'.code..'9'.code))
+            else if (parts[i] == "-" && parts[i + 1].length == parts[i + 1].toInt().toString().length)
                 result -= parts[i + 1].toInt()
             else
                 throw Exception("")
