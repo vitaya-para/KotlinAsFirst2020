@@ -2,6 +2,9 @@
 
 package lesson6.task1
 
+import java.lang.Exception
+import java.lang.IllegalArgumentException
+
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
 // Рекомендуемое количество баллов = 11
@@ -138,7 +141,31 @@ fun bestHighJump(jumps: String): Int = TODO()
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int = TODO()
+fun plusMinus(expression: String): Int {
+
+    val parts = expression.split(" ")
+
+    try {
+        if (parts[0].length > 1 && parts[0].first().code !in ('1'.code..'9'.code))
+            throw Exception("")
+
+        var result = parts[0].toInt()
+
+        for (i in 1 until parts.size step 2) {
+            if (parts[i] == "+" && parts[i + 1].first().code in ('1'.code..'9'.code))
+                result += parts[i + 1].toInt()
+            else if (parts[i] == "-" && parts[i + 1].first().code in ('1'.code..'9'.code))
+                result -= parts[i + 1].toInt()
+            else
+                throw Exception("")
+        }
+        return result
+
+    } catch (e: Exception) {
+        throw IllegalArgumentException("")
+    }
+
+}
 
 /**
  * Сложная (6 баллов)
