@@ -294,7 +294,7 @@ fun fromRoman(roman: String): Int {
         'M' to 1000
     )
     if (roman.length == 1) return assoc[roman[0]]!!
-
+    if (roman.isEmpty()) return 0
     var res = assoc[roman[1]]!!
     //проверяем наличие п.2 из цикла до его начала (XL)
     res += if (res > assoc[roman[0]]!!) -assoc[roman[0]]!! else assoc[roman[0]]!!
@@ -397,9 +397,8 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
             }
             ']' -> {
                 if (table[pos] != 0)
-                    i = bracketCloseMap[i]!! - 1
+                    i = bracketCloseMap[i]!!
             }
-            ' ' -> steps++
         }
         if (steps > 1)
             steps--

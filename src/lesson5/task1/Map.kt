@@ -104,7 +104,7 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val res = mutableMapOf<Int, MutableList<String>>()
     for (i in grades) {
-        if (res[i.value] != null)
+        if (res[i.value] !== null)
             res[i.value]!!.add(i.key)
         else
             res[i.value] = mutableListOf(i.key)
@@ -251,7 +251,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean =
-    word.lowercase(Locale.getDefault()).toSet().sorted() == chars.map { it.lowercaseChar() }.sorted()
+    word.lowercase(Locale.getDefault()).toSet().sorted() == chars.map { it.lowercaseChar() }.sorted() || word.isEmpty()
 
 /**
  * Средняя (4 балла)
@@ -267,18 +267,20 @@ fun canBuildFrom(chars: List<Char>, word: String): Boolean =
  */
 fun extractRepeats(list: List<String>): Map<String, Int> {
     val cp = list.sorted()
+    if(cp.isEmpty()) return mapOf()
     val res = mutableMapOf<String, Int>()
-    var line = ""
-    var count = 0
-    for (i in cp) {
-        if (i == line)
+    var line: String = cp[0]
+    var count = 1
+    for (i in 1 until cp.size) {
+        if (cp[i] == line)
             count++
         else {
             if (count > 1) res[line] = count
-            line = i
+            line = cp[i]
             count = 1
         }
     }
+    if (count > 1) res[line] = count
     return res
 }
 

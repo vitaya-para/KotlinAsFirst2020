@@ -394,6 +394,7 @@ private fun hundreds(n: Int): String {
     } else {
         res += when ((n % 100) / 10) {
             0 -> ""
+            1 -> "десять "
             2, 3 -> units[(n % 100) / 10] + "дцать "
             4 -> "сорок "
             in 5..8 -> units[(n % 100) / 10] + "десят "
