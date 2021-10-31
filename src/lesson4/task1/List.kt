@@ -202,17 +202,24 @@ fun factorize(n: Int): List<Int> {
 
     val divs = mutableListOf<Int>()
     var curN = n
+    var stop = false
 
     while (curN != 1) {
         var dig = 2
-        while (curN % dig != 0)
+        while (curN % dig != 0) {
+            if (dig * dig >= curN) {
+                divs.add(curN)
+                stop = true
+                break
+            }
             dig++
+        }
+
+        if (stop)
+            break
+
         divs.add(dig)
         curN /= dig
-        if (isPrime(curN)) {
-            divs.add(curN)
-            break
-        }
     }
     return divs
 }
@@ -292,12 +299,12 @@ fun decimal(digits: List<Int>, base: Int): Int = TODO()
  */
 fun decimalFromString(str: String, base: Int): Int {
     var ans = 0
-    var digPow = str.length - 1
+    var digPow = base.toDouble().pow(str.length - 1).toInt()
 
     for (i in str.indices) {
         val dig = if (str[i] >= 'a') str[i] - 'a' + 10 else str[i] - '0'
-        ans += dig * base.toDouble().pow(digPow).toInt()
-        digPow--
+        ans += dig * digPow
+        digPow /= base
     }
 
     return ans

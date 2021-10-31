@@ -98,24 +98,7 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
  *   buildGrades(mapOf("Марат" to 3, "Семён" to 5, "Михаил" to 5))
  *     -> mapOf(5 to listOf("Семён", "Михаил"), 3 to listOf("Марат"))
  */
-fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO() /* {
-
-    var result = mutableMapOf<Int, List<String>>()
-
-    grades.toSortedMap()
-
-    for (grade in 2..5) {
-        if (!grades.containsValue(grade))
-            continue
-
-
-
-    }
-
-    return result.toMap()
-}
-
-*/
+fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO()
 
 
 /**
@@ -133,7 +116,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> = TODO() /* {
 fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
 
     for (key in a.keys) {
-        if (!(b.containsKey(key) && a[key] == b[key]))
+        if (a[key] != b[key])
             return false
     }
     return true
@@ -207,19 +190,14 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
 
     for ((company, cost) in stockPrices) {
 
-        if (shares.containsKey(company)) {
-            shares[company] = shares[company]!!.plus(cost)
-            count[company] = count[company]!!.plus(1)
-        } else {
-            shares[company] = cost
-            count[company] = 1.0
-        }
+        shares[company] = (shares[company] ?: 0.0) + cost
+        count[company] = (count[company] ?: 0.0) + 1
     }
 
     for (i in shares.keys)
-        shares[i] = shares[i]!!.div(count[i] ?: 1.0)
+        shares[i] = (shares[i]!!) / (count[i]!!)
 
-    return shares.toMap()
+    return shares
 }
 
 
@@ -377,7 +355,6 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-
 
 
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
