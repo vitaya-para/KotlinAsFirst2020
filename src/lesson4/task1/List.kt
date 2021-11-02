@@ -178,7 +178,7 @@ fun polynom(p: List<Int>, x: Int): Int {
     return res
 }
 
-private fun Int.pow(i: Int): Int = this.toDouble().pow(i).toInt()
+fun Int.pow(i: Int): Int = this.toDouble().pow(i).toInt()
 
 /**
  * Средняя (3 балла)

@@ -2,7 +2,11 @@
 
 package lesson7.task1
 
+import ru.spbstu.wheels.toMutableMap
+import java.io.BufferedWriter
 import java.io.File
+import kotlin.math.max
+import lesson4.task1.pow
 
 // Урок 7: работа с файлами
 // Урок интегральный, поэтому его задачи имеют сильно увеличенную стоимость
@@ -63,7 +67,15 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  * Подчёркивание в середине и/или в конце строк значения не имеет.
  */
 fun deleteMarked(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    for (line in File(inputName).readLines())
+        try {
+            if (line[0] != '_')
+                writer.write("$line\n")
+        } catch (e: Throwable) {
+            writer.write("\n")
+        }
+    writer.close()
 }
 
 /**
@@ -75,7 +87,20 @@ fun deleteMarked(inputName: String, outputName: String) {
  * Регистр букв игнорировать, то есть буквы е и Е считать одинаковыми.
  *
  */
-fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> = TODO()
+fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
+    val statistic = substrings.map { it to 0 }.toMutableMap()
+    val input = File(inputName).readLines().toString().lowercase().toMutableList()
+    for (i in substrings) {
+        val lCase = i.lowercase()
+        var pos = input.joinToString("").indexOf(lCase)
+        while (pos != -1) {
+            statistic[i] = statistic[i]!! + 1
+            input[pos] = '' //U+0000
+            pos = input.joinToString("").indexOf(lCase)
+        }
+    }
+    return statistic
+}
 
 
 /**
@@ -91,8 +116,28 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  * Исключения (жюри, брошюра, парашют) в рамках данного задания обрабатывать не нужно
  *
  */
+private fun String.syncCase(oldLine: String): String {
+    val outLine = this.toMutableList()
+    for (i in this.indices)
+        if (oldLine[i].isUpperCase() && this[i].isLowerCase() || oldLine[i].isLowerCase() && this[i].isUpperCase())
+            if (oldLine[i].isUpperCase())
+                outLine[i] = outLine[i].uppercase()[0]
+            else
+                outLine[i] = outLine[i].lowercase()[0]
+    return outLine.joinToString("")
+}
+
 fun sibilants(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    for (line in File(inputName).readLines()) {
+        writer.appendLine(
+            line.lowercase().replace(Regex("""[жчшщ][ыяю]"""), transform = {
+                it.value.replace('ы', 'и').replace('я', 'а').replace('ю', 'у')
+            })
+                .syncCase(line)
+        )
+    }
+    writer.close()
 }
 
 /**
@@ -112,8 +157,22 @@ fun sibilants(inputName: String, outputName: String) {
  * 4) Число строк в выходном файле должно быть равно числу строк во входном (в т. ч. пустых)
  *
  */
+private fun maxSize(inputName: String): Int {
+    var myMax = Int.MIN_VALUE
+    for (line in File(inputName).readLines())
+        myMax = max(myMax, line.trim().length)
+    return myMax
+}
+
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val myMax = maxSize(inputName)
+    for (line in File(inputName).readLines())
+        writer.write(buildString {
+            append(padEnd((myMax - line.trim().length) / 2, ' '))
+            append("${line.trim()}\n")
+        })
+    writer.close()
 }
 
 /**
@@ -143,8 +202,34 @@ fun centerFile(inputName: String, outputName: String) {
  * 7) В самой длинной строке каждая пара соседних слов должна быть отделена В ТОЧНОСТИ одним пробелом
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
+private fun getSpace(need: Int): String = "".padEnd(need, ' ')
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val myMax = maxSize(inputName)
+    for (line in File(inputName).readLines()) {
+        val words = Regex("""[^ ]+""").findAll(line).map { it.value }.toList()
+        var needSpace = myMax - Regex("""[^ ]""").findAll(line.trim()).count()
+        var countWords = words.count() - 1
+        val addLine = buildString {
+            for (word in words)
+                if (countWords < 1)
+                    append(word)
+                else {
+                    append(word)
+                    val logic = needSpace.toFloat() / countWords > (needSpace / countWords).toFloat()
+                    append(getSpace((needSpace / countWords).toInt()))
+                    needSpace -= (needSpace / countWords).toInt()
+                    if (logic) {
+                        append(' ')
+                        needSpace--
+                    }
+                    countWords--
+                }
+            append("\n")
+        }
+        writer.write(addLine)
+    }
+    writer.close()
 }
 
 /**
@@ -281,8 +366,112 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
+class MyArrayDeque(__writer: BufferedWriter) {
+    private val writer: BufferedWriter
+    private val stack = ArrayDeque<String>()
+    private val needNextLine = listOf<String>("html", "body", "p", "ol", "ul")
+    private var depth = -1
+
+    init {
+        writer = __writer
+    }
+
+    fun getDepth(): Int = depth
+
+    private fun comToTag(a: String, open: Boolean): String = buildString {
+        if (open)
+            append("<$a>")
+        else
+            append("</$a>")
+
+        if (needNextLine.contains(a))
+            append("\n")
+    }
+
+    fun push(str: String) {
+        if (str == "ol" || str == "ul")
+            depth++
+        stack.addLast(str)
+        writer.write(comToTag(str, true))
+    }
+
+    fun pop() {
+        if (stack.last() == "ol" || stack.last() == "ul")
+            depth--
+        writer.write(comToTag(stack.last(), false))
+        stack.removeLast()
+    }
+
+    fun newTag(str: String) = when (stack.last()) {
+        str -> this.pop()
+        else -> this.push(str)
+    }
+
+    fun last(): String = stack.last()
+
+    fun isEmpty(): Boolean = stack.isEmpty()
+
+    fun downTo(level: Int) {
+        while (depth > level)
+            this.pop()
+    }
+
+}
+
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val stack = MyArrayDeque(writer)
+    stack.push("html")
+    stack.push("body")
+    stack.push("p")
+    for (line in File(inputName).readLines()) {
+        if (line == "") {
+            stack.pop()
+            stack.push("p")
+            continue
+        }
+
+        val bufSz = 2
+        val buffer = MutableList<Char>(bufSz) { '' }//U+0000
+        var runner = 2
+        val keyChars = listOf<Char>('*', '~')
+        for (i in line) {
+            buffer[runner % bufSz] = i
+            when {
+                //s
+                i == '~' && buffer[(runner - 1) % bufSz] == '~' -> {
+                    stack.newTag("s")
+                    buffer[(runner - 1) % bufSz] = ''//U+0000
+                    buffer[(runner) % bufSz] = ''//U+0000
+                }
+                //b
+                i == '*' && buffer[(runner - 1) % bufSz] == '*' -> {
+                    stack.newTag("b")
+                    buffer[(runner - 1) % bufSz] = ''//U+0000
+                    buffer[(runner) % bufSz] = ''//U+0000
+                }
+                //i
+                buffer[(runner - 1) % bufSz] == '*' -> {
+                    stack.newTag("i")
+                    if (i != '~')
+                        writer.write(i.toString())
+                }
+                //single keyChar
+                keyChars.contains(i) -> {
+                }
+
+                else -> {
+                    if (buffer[(runner - 1) % bufSz] == '~')
+                        writer.write(buffer[(runner - 1) % bufSz].toString())
+                    writer.write(i.toString())
+                }
+            }
+            runner++
+        }
+    }
+    while (!stack.isEmpty())
+        stack.pop()
+    writer.close()
 }
 
 /**
@@ -382,8 +571,55 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
+private fun getLevel(str: String): Int {
+    val a = Regex("""^[ ]*""").find(str) ?: return -1
+    return a.value.length / 4 // 4 - кол-во пробелов перед символом остановки(* или число) в уровне
+}
+
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val stack = MyArrayDeque(writer)
+    stack.push("html")
+    stack.push("body")
+    stack.push("p")
+    for (line in File(inputName).readLines()) {
+        if (line == "") {
+            stack.pop()
+            stack.push("p")
+            continue
+        }
+        var checkedLine = line
+
+        if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
+            // проверка на то, нужно ли вообще париться с ol/ul/li
+            if (getLevel(line) == stack.getDepth()) {
+                stack.pop()
+            } else if (getLevel(line) > stack.getDepth()) //выбор между ol/ul
+            {
+                if (line.contains(Regex("""^[ ]*((\d+)?\. )""")))
+                    stack.push("ol") //Нумерованный список
+                else
+                    stack.push("ul")  //Ненумерованный список
+            } else {
+                //спускаемся до getLevel(line) уровня
+                stack.downTo(getLevel(line))
+                stack.pop()
+            }
+            if (stack.getDepth() != -1)
+                stack.push("li")
+            //обрезаем строку
+            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)!!.value.length ?: 0
+            line.substring(a, line.length).also { checkedLine = it }
+
+        } else {
+            //закрываем все открытые теги (если нет вхождения в список, значит нужно спуститься до -1 уровня)
+            stack.downTo(-1)
+        }
+        writer.write(checkedLine)
+    }
+    while (!stack.isEmpty())
+        stack.pop()
+    writer.close()
 }
 
 /**
@@ -395,7 +631,85 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
  *
  */
 fun markdownToHtml(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val stack = MyArrayDeque(writer)
+    stack.push("html")
+    stack.push("body")
+    stack.push("p")
+    for (line in File(inputName).readLines()) {
+        if (line == "") {
+            stack.pop()
+            stack.push("p")
+            continue
+        }
+        var checkedLine = line
+
+        if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
+            // проверка на то, нужно ли вообще париться с ol/ul/li
+            if (getLevel(line) == stack.getDepth()) {
+                stack.pop()
+            } else if (getLevel(line) > stack.getDepth()) //выбор между ol/ul
+            {
+                if (line.contains(Regex("""^[ ]*((\d+)?\. )""")))
+                    stack.push("ol") //Нумерованный список
+                else
+                    stack.push("ul")  //Ненумерованный список
+            } else {
+                //спускаемся до getLevel(line) уровня
+                stack.downTo(getLevel(line))
+                stack.pop()
+            }
+            if (stack.getDepth() != -1)
+                stack.push("li")
+            //обрезаем строку
+            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)!!.value.length ?: 0
+            line.substring(a, line.length).also { checkedLine = it }
+
+        } else {
+            //закрываем все открытые теги (если нет вхождения в список, значит нужно спуститься до -1 уровня)
+            stack.downTo(-1)
+        }
+        val bufSz = 2
+        val buffer = MutableList<Char>(bufSz) { '' }//U+0000
+        var runner = 2
+        val keyChars = listOf<Char>('*', '~')
+        for (i in checkedLine) {
+            buffer[runner % bufSz] = i
+            when {
+                //s
+                i == '~' && buffer[(runner - 1) % bufSz] == '~' -> {
+                    stack.newTag("s")
+                    buffer[(runner - 1) % bufSz] = ''//U+0000
+                    buffer[(runner) % bufSz] = ''//U+0000
+                }
+                //b
+                i == '*' && buffer[(runner - 1) % bufSz] == '*' -> {
+                    stack.newTag("b")
+                    buffer[(runner - 1) % bufSz] = ''//U+0000
+                    buffer[(runner) % bufSz] = ''//U+0000
+                }
+                //i
+                buffer[(runner - 1) % bufSz] == '*' -> {
+                    stack.newTag("i")
+                    if (i != '~')
+                        writer.write(i.toString())
+                }
+                //single keyChar
+                keyChars.contains(i) -> {
+                }
+
+                else -> {
+                    if (buffer[(runner - 1) % bufSz] == '~')
+                        writer.write(buffer[(runner - 1) % bufSz].toString())
+                    writer.write(i.toString())
+                }
+            }
+            runner++
+        }
+    }
+    while (!stack.isEmpty())
+        stack.pop()
+    writer.close()
 }
 
 /**
@@ -448,7 +762,57 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  *
  */
+private fun Int.length(): Int {
+    var out = 0
+    var cp = this
+    do {
+        cp /= 10
+        out++
+    } while (cp > 0)
+    return out
+}
+
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    var space = 0
+    val lhvLight = lhv.length()
+    var minuend = 0 //уменьшаемое
+    var subtrahend = 0 //вычитаемое
+    var difference = 0 //разность
+    for (i in 0..lhvLight) {
+        if (lhv.toFloat() / 10.pow(lhvLight - i) / rhv >= 1.0) {
+            minuend = lhv / 10.pow(lhvLight - i)
+            subtrahend = (minuend / rhv) * rhv
+            difference = minuend - subtrahend
+            space = i
+            break
+        }
+        minuend = lhv
+        subtrahend = (minuend / rhv) * rhv
+        difference = minuend - subtrahend
+        space = lhvLight
+    }
+
+    space++
+    writer.appendLine(
+        " $lhv | $rhv\n-${subtrahend}${getSpace(lhvLight + 3 - subtrahend.length())}${lhv / rhv}\n" +
+                "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
+    ) // длина числа и 3 символа " | "
+    for (i in lhv.toString().substring(minuend.length(), lhvLight)) {
+        space++
+        writer.appendLine(getSpace(space - difference.length() - 1) + "$difference$i")//-1 тк новый символ
+        minuend = difference * 10 + i.toString().toInt()
+        subtrahend = (minuend / rhv) * rhv
+        difference = minuend - subtrahend
+        writer.appendLine(
+            getSpace(space - subtrahend.length() - 1) + "-" + subtrahend + "\n" +
+                    getSpace(space - max(minuend.length(), subtrahend.length() + 1)) +
+                    "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
+        ) //-1 из-за символа "-"
+    }
+    writer.appendLine(
+        getSpace(space - difference.length()) + difference
+    )
+    writer.close()
 }
 
