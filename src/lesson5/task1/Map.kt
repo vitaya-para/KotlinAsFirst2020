@@ -2,7 +2,9 @@
 
 package lesson5.task1
 
+import ru.spbstu.wheels.sorted
 import kotlin.math.max
+
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -313,26 +315,48 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
 
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
 
-    if (list.isEmpty())
-        return Pair(-1, -1)
+    val array = mutableListOf<Int>()
 
-    val checked = mutableListOf<Int>()
+    fun addElem(elem: Int) {
 
-    for (first in list.indices) {
-        if (list[first] > number) {
-            if (!checked.contains(number))
-                checked.add(number)
-            continue
+        if (array.isEmpty())
+            array.add(elem)
+
+        if (elem < array[0])
+            array.add(0, elem)
+
+        if (elem > array[array.size - 1])
+            array.add(elem)
+
+        var left = 0
+        var right = array.size
+
+        while (right > left + 1) {
+
+            val middle = (left + right) / 2
+            if (array[middle] > elem) {
+                if (array[middle - 1] < elem) {
+                    array.add(middle, elem)
+                    return
+                }
+                right = middle
+            } else
+                left = middle
         }
+    }
 
-        val subList = list.subList(first + 1, list.size)
-        if (subList.contains(number - list[first]))
-            return Pair(first, subList.indexOf(number - list[first]) + first + 1)
-        else
-            checked.add(list[first])
+    val indexes = mutableMapOf<Int, Int>()  // indexes[number] = index
+
+    for (i in list.indices) {
+        if (array.binarySearch(list[i]) >= 0)
+            return Pair(i, indexes[list[i]]!!).sorted()
+        val dig = number - list[i]
+        indexes[dig] = i
+        addElem(dig)
     }
     return Pair(-1, -1)
 }
+
 
 /**
  * Очень сложная (8 баллов)
