@@ -1,5 +1,5 @@
 @file:Suppress("UNUSED_PARAMETER", "ConvertCallChainIntoSequence")
-
+// Правки к замечаниям будут присланы в ближайшее время
 package lesson7.task1
 
 import ru.spbstu.wheels.toMutableMap
