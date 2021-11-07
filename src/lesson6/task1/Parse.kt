@@ -135,7 +135,7 @@ fun dateDigitToStr(digital: String): String = TODO()
  */
 fun flattenPhoneNumber(phone: String): String {
     //проверка на наличие () и символов отличных от 0-9, ' ', + и минуса
-    if (Regex("""\(\)|[^0-9- ()+]""").find(phone) != null) return ""
+    if (Regex("""\(\)|[^0-9- ()+]""").containsMatchIn(phone)) return ""
     var str = ""
     Regex("""[+]?[0-9]+""").findAll(phone).forEach { str += it.value }
     return str
@@ -152,7 +152,7 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    if (Regex("""[^0-9- %]""").find(jumps) != null) return -1
+    if (Regex("""[^0-9- %]""").containsMatchIn(jumps)) return -1
     var myMax = -1
     Regex("[0-9]+").findAll(jumps).forEach { myMax = max(myMax, it.value.toIntOrNull()!!) }
     return myMax
@@ -170,7 +170,7 @@ fun bestLongJump(jumps: String): Int {
  * вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
-    if (Regex("""[^0-9- %+]""").find(jumps) != null) return -1
+    if (Regex("""[^0-9- %+]""").containsMatchIn(jumps)) return -1
     var myMax = -1
     //получаем все успешные результаты и сравниваем с максимумом подстроку до символа пробел
     Regex("[0-9]+ [+]").findAll(jumps).forEach { myMax = max(myMax, it.value.substringBefore(' ').toIntOrNull()!!) }
@@ -188,7 +188,7 @@ fun bestHighJump(jumps: String): Int {
  */
 fun plusMinus(expression: String): Int {
     //считаю, что запись вида - 2 + 1 является некорректной
-    if (Regex("""[^0-9 +-]""").find(expression) != null)
+    if (Regex("""[^0-9 +-]""").containsMatchIn(expression))
         throw IllegalArgumentException("Error")
 
     var isNum = true
@@ -283,7 +283,8 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
-    if (Regex("""[^IVXLCDM]""").find(roman) != null) return -1
+    if (roman == "") return 0
+    if (Regex("""[^IVXLCDM]""").containsMatchIn(roman)) return -1
     val assoc = mapOf<Char, Int>(
         'I' to 1,
         'V' to 5,
