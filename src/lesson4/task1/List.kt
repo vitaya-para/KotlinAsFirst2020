@@ -172,8 +172,10 @@ fun times(a: List<Int>, b: List<Int>): Int {
 fun polynom(p: List<Int>, x: Int): Int {
     if (p.isEmpty()) return 0
     var res = 0
+    var myPow = 1
     for (i in 0 until p.size) {
-        res += p[i] * x.pow(i)
+        res += p[i] * myPow
+        myPow *= x
     }
     return res
 }

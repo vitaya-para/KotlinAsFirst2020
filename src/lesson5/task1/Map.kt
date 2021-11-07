@@ -146,7 +146,7 @@ fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
 fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>) {
     for ((key, value) in b)
         if (a[key] == value)
-            a.remove(key)
+            a.remove(key, value)
 }
 
 /**
@@ -156,10 +156,13 @@ fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>) {
  * В выходном списке не должно быть повторяюихся элементов,
  * т. е. whoAreInBoth(listOf("Марат", "Семён, "Марат"), listOf("Марат", "Марат")) == listOf("Марат")
  */
+//предполагается, что поиск по хеш-таюлице имеет сложность O(1)
 fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
+    val minList = if (a.size > b.size) b else a
     val res = mutableSetOf<String>()
-    for (i in a)
-        if (i in b)
+    val hashtable: HashSet<String> = (if (a.size <= b.size) b else a).toHashSet()
+    for (i in minList)
+        if (hashtable.contains(i))
             res += i
     return res.toList()
 }
@@ -189,7 +192,7 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
             res[key] != value -> res[key] += ", $value"
         }
     }
-    return res.toMap()
+    return res
 }
 
 /**
@@ -205,14 +208,12 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
 fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
     val preRes = mutableMapOf<String, Pair<Double, Int>>()
     for ((k, v) in stockPrices)
-        when {
-            preRes[k] != null -> preRes[k] = Pair(preRes[k]!!.first + v, preRes[k]!!.second + 1)
-            else -> preRes[k] = Pair(v, 1)
-        }
-    val res = mutableMapOf<String, Double>()
-    for ((key, value) in preRes)
-        res[key] = value.first / value.second
-    return res
+        preRes[k] = (preRes[k] + Pair(v, 1)) ?: Pair(v, 1)
+    return preRes.map { it.key to it.value.first / it.value.second }.toMap()
+}
+
+private operator fun Pair<Double, Int>?.plus(pair: Pair<Double, Int>): Pair<Double, Int>? {
+    return (Pair(this?.first?.plus(pair.first) ?: return null, this!!.second + pair.second))
 }
 
 /**
@@ -231,10 +232,10 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  *   ) -> "Мария"
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
-    var mMin = Double.MAX_VALUE
+    var mMin: Double? = null
     var res: String? = null
     for ((i, j) in stuff)
-        if (kind == j.first && mMin > j.second) {
+        if (kind == j.first && (mMin ?: j.second) >= j.second) {
             res = i
             mMin = j.second
         }
@@ -251,7 +252,8 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean =
-    word.lowercase(Locale.getDefault()).toSet().sorted() == chars.map { it.lowercaseChar() }.sorted() || word.isEmpty()
+    word.lowercase(Locale.getDefault()).toSet().sorted() == chars.map { it.lowercaseChar() }.toSet().sorted()
+            || word.isEmpty()
 
 /**
  * Средняя (4 балла)
@@ -265,23 +267,13 @@ fun canBuildFrom(chars: List<Char>, word: String): Boolean =
  * Например:
  *   extractRepeats(listOf("a", "b", "a")) -> mapOf("a" to 2)
  */
+
 fun extractRepeats(list: List<String>): Map<String, Int> {
-    val cp = list.sorted()
-    if(cp.isEmpty()) return mapOf()
     val res = mutableMapOf<String, Int>()
-    var line: String = cp[0]
-    var count = 1
-    for (i in 1 until cp.size) {
-        if (cp[i] == line)
-            count++
-        else {
-            if (count > 1) res[line] = count
-            line = cp[i]
-            count = 1
-        }
+    for (i in list) {
+        res[i] = (res[i] ?: 0) + 1
     }
-    if (count > 1) res[line] = count
-    return res
+    return res.filter { it.value > 1 }
 }
 
 /**
