@@ -146,15 +146,17 @@ fun bestHighJump(jumps: String): Int = TODO()
 fun plusMinus(expression: String): Int {
 
     val parts = expression.split(" ")
+    fun illegalNumber(i: Int) = parts[i].length > 1 && parts[i].first() !in ('1'..'9')
+
 
     try {
-        if (parts[0].length > 1 && parts[0].first().code !in ('1'.code..'9'.code))
+        if (illegalNumber(0))
             throw Exception("")
 
         var result = parts[0].toInt()
 
         for (i in 1 until parts.size step 2) {
-            if (parts[i + 1].length > 1 && parts[i + 1].first() !in '1'..'9')
+            if (illegalNumber(i + 1))
                 throw Exception("")
             if (parts[i] == "+")
                 result += parts[i + 1].toInt()
@@ -181,19 +183,17 @@ fun plusMinus(expression: String): Int {
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
 fun firstDuplicateIndex(str: String): Int {
-    try {
-        val words = str.lowercase(Locale.getDefault()).split(" ")
-        var index = words[0].length + 1
 
-        for (i in 1 until words.size) {
-            if (words[i] == words[i - 1])
-                return index - words[i].length - 1
-            index += words[i].length + 1
-        }
-        return -1
-    } catch (e: Exception) {
-        return -1
+    val words = str.lowercase(Locale.getDefault()).split(" ")
+    var index = words[0].length + 1
+
+    for (i in 1 until words.size) {
+        if (words[i] == words[i - 1])
+            return index - words[i].length - 1
+        index += words[i].length + 1
     }
+    return -1
+
 }
 
 /**
