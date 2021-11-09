@@ -6,6 +6,7 @@ import lesson1.task1.sqr
 import ru.spbstu.wheels.Inf
 import ru.spbstu.wheels.NullableMonad.map
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 /**
  * Клетка шахматной доски. Шахматная доска квадратная и имеет 8 х 8 клеток.
@@ -31,19 +32,26 @@ data class Square(val column: Int, val row: Int) {
      */
     fun notation(): String = if (this.inside()) "${(column + 'a'.code - 1).toChar()}$row" else ""
 
-    private fun dist(start: Square, end: Square): Int =
-        if (start.inside()) abs(sqr((start.column - end.column))) + abs(sqr((start.row - end.row))) else Int.MAX_VALUE
+    private fun dist(start: Square, end: Square): Double =
+        if (start.inside())
+            sqrt(sqr((start.column - end.column)).toDouble() + sqr((start.row - end.row)))
+        else
+            Double.MAX_VALUE
 
-    fun getNewPos(m_column: Int, m_row: Int): Square = Square(this.column + m_column, this.row + m_row)
+    //fun getNewPos(m_column: Int, m_row: Int): Square = Square(this.column + m_column, this.row + m_row)
 
-    fun elemAndPosition(m_column: Int, m_row: Int, end: Square): Pair<Square, Int> {
+    fun elemAndPosition(m_column: Int, m_row: Int, end: Square): Pair<Square, Double> {
         try {
-            val out = getNewPos(m_column, m_row)
-            return Pair(out, dist(out, end))
+            val out = this + Pair(m_column, m_row)
+            return Pair(Square(m_column, m_row), dist(out, end))
         } catch (e: Exception) {
-            return Pair(Square(1, 1), Int.MAX_VALUE)
+            return Pair(Square(1, 1), Double.MAX_VALUE)
         }
     }
+
+    operator fun minus(start: Square): Square = Square(this.column - start.column, this.row - start.row)
+    operator fun plus(move: Square): Square = Square(this.column + move.column, this.row + move.row)
+    operator fun plus(move: Pair<Int, Int>): Square = this + Square(move.first, move.second)
 }
 
 /**
@@ -134,6 +142,7 @@ fun rookTrajectory(start: Square, end: Square): List<Square> = mutableSetOf<Squa
  * Слон может пройти через клетку (6, 4) к клетке (3, 7).
  */
 fun bishopMoveNumber(start: Square, end: Square): Int = TODO()
+
 /**
  * Сложная (5 баллов)
  *
@@ -192,20 +201,30 @@ fun kingMoveNumber(start: Square, end: Square): Int = kingTrajectory(start, end)
  */
 fun kingTrajectory(start: Square, end: Square): List<Square> {
     val way = mutableListOf<Square>(start)
-    var position = start
-    while (position != end) {
-        val posMove = listOf<Pair<Square, Int>>(
-            position.elemAndPosition(1, 1, end),
-            position.elemAndPosition(1, 0, end),
-            position.elemAndPosition(1, -1, end),
-            position.elemAndPosition(0, -1, end),
-            position.elemAndPosition(-1, -1, end),
-            position.elemAndPosition(-1, 0, end),
-            position.elemAndPosition(-1, 1, end),
-            position.elemAndPosition(0, -1, end)
-        ).sortedBy { it.second }[0].first
-        way.add(posMove)
-        position = posMove
+    var move = listOf(
+        start.elemAndPosition(1, 1, end),
+        start.elemAndPosition(1, 0, end),
+        start.elemAndPosition(1, -1, end),
+        start.elemAndPosition(0, -1, end),
+        start.elemAndPosition(-1, -1, end),
+        start.elemAndPosition(-1, 0, end),
+        start.elemAndPosition(-1, 1, end),
+        start.elemAndPosition(0, 1, end)
+    ).sortedBy { it.second }[0].first
+    var step = start
+    while (step.row != end.row && step.column != end.column) {
+        step += move
+        way.add(step)
+    }
+    move = listOf(
+        step.elemAndPosition(1, 0, end),
+        step.elemAndPosition(0, -1, end),
+        step.elemAndPosition(-1, 0, end),
+        step.elemAndPosition(0, 1, end)
+    ).sortedBy { it.second }[0].first
+    while (step.row != end.row || step.column != end.column) {
+        step += move
+        way.add(step)
     }
     return way
 }
@@ -257,44 +276,40 @@ fun knightMoveNumber(start: Square, end: Square): Int = knightTrajectory(start, 
  */
 private fun possibleKnightMoves(a: Square): List<Square> {
     val out = mutableListOf<Square>()
-    if (a.getNewPos(1, 2).inside()) out.add(a.getNewPos(1, 2))
-    if (a.getNewPos(2, 1).inside()) out.add(a.getNewPos(2, 1))
-    if (a.getNewPos(2, -1).inside()) out.add(a.getNewPos(2, -1))
-    if (a.getNewPos(-1, 2).inside()) out.add(a.getNewPos(-1, 2))
-    if (a.getNewPos(-1, -2).inside()) out.add(a.getNewPos(-1, -2))
-    if (a.getNewPos(-2, -1).inside()) out.add(a.getNewPos(-2, -1))
-    if (a.getNewPos(-2, 1).inside()) out.add(a.getNewPos(-2, 1))
-    if (a.getNewPos(1, -2).inside()) out.add(a.getNewPos(1, -2))
+    if ((a + Pair(1, 2)).inside()) out.add(a + Pair(1, 2))
+    if ((a + Pair(2, 1)).inside()) out.add(a + Pair(2, 1))
+    if ((a + Pair(2, -1)).inside()) out.add(a + Pair(2, -1))
+    if ((a + Pair(-1, 2)).inside()) out.add(a + Pair(-1, 2))
+    if ((a + Pair(-1, -2)).inside()) out.add(a + Pair(-1, -2))
+    if ((a + Pair(-2, -1)).inside()) out.add(a + Pair(-2, -1))
+    if ((a + Pair(-2, 1)).inside()) out.add(a + Pair(-2, 1))
+    if ((a + Pair(1, -2)).inside()) out.add(a + Pair(1, -2))
     return out
 }
 
-// Алгоритм Дейкстры с модификацией
-// вместо того, чтобы хранить в distance только длину пути, еще храним предыдущую клетку решения,
-// которая после собирается в цикле for
+private fun restoreWay(end: Square): List<Square> = listOf(end)
 fun knightTrajectory(start: Square, end: Square): List<Square> {
-    val processed = MutableList(8 * 8) { false }
-    val distance = MutableList<Pair<Int, Square>?>(8 * 8) { null }
-    val q = mutableListOf(Pair(0, start))
-    distance[start.toInt] = Pair(1, start)
-    while (q.isNotEmpty()) {
-        val a = q[0].second
-        q.removeFirst()
-        if (processed[a.toInt]) continue
-        processed[a.toInt] = true
-        for (u in possibleKnightMoves(a)) {
-            if (distance[u.toInt] == null || (distance[a.toInt]!!.first + 1 < distance[u.toInt]!!.first)) {
-                distance[u.toInt] = Pair(distance[a.toInt]!!.first + 1, a)
-                q.add(Pair(distance[u.toInt]!!.first, u))
+    val processed = MutableList<Square?>(8 * 8) { null }
+    processed[start.toInt] = start
+    var q = listOf(start)
+    while (true) {
+        val newQ = mutableListOf<Square>()
+        for (i in q) {
+            if (i == end) {
+                val out = mutableListOf(end)
+                var pastStep = end
+                while (pastStep != start) {
+                    pastStep = processed[pastStep.toInt]!!
+                    out.add(pastStep)
+                }
+                return out.reversed()
             }
+            for (j in possibleKnightMoves(i))
+                if (processed[j.toInt] == null) {
+                    processed[j.toInt] = i
+                    newQ.add(j)
+                }
         }
-        q.sortBy { it.first }
+        q = newQ
     }
-    val out = mutableListOf<Square>()
-    var actual = distance[end.toInt]!!
-    out.add(end)
-    while (actual.first != 1) {
-        out.add(actual.second)
-        actual = distance[actual.second.toInt]!!
-    }
-    return out.reversed()
 }

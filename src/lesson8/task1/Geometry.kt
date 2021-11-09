@@ -131,8 +131,7 @@ fun diameter(vararg points: Point): Segment {
  * Центр её должен находиться посередине между точками, а радиус составлять половину расстояния между ними
  */
 
-fun circleByDiameter(diameter: Segment): Circle
-{
+fun circleByDiameter(diameter: Segment): Circle {
     val c = Point((diameter.begin.x + diameter.end.x) / 2, (diameter.begin.y + diameter.end.y) / 2)
     return Circle(c, max(c.distance(diameter.begin), c.distance(diameter.end)))
 }
@@ -180,8 +179,12 @@ class Line private constructor(val b: Double, val angle: Double) {
  *
  * Построить прямую по отрезку
  */
-private fun calAngle(begin: Point, end: Point): Double =
-    if (begin.x - end.x != 0.0) atan((begin.y - end.y) / (begin.x - end.x)) else PI / 2
+//Угол наклона обязан находиться в диапазоне от 0 (включительно) до PI (исключительно).
+private fun calAngle(begin: Point, end: Point): Double = when {
+    begin.x - end.x == 0.0 -> PI / 2
+    atan((begin.y - end.y) / (begin.x - end.x)) >= 0 -> atan((begin.y - end.y) / (begin.x - end.x))
+    else -> atan((begin.y - end.y) / (begin.x - end.x)) + PI
+}
 
 fun lineBySegment(s: Segment): Line =
     Line(
@@ -207,12 +210,7 @@ fun lineByPoints(a: Point, b: Point): Line = lineBySegment(Segment(a, b))
  *
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
-fun bisectorByPoints(a: Point, b: Point): Line {
-    val a1 = a.avgPoint(b)
-    var a2 = PI / 2 - calAngle(a, b)
-    if (a2 < 0) a2 += PI
-    return Line(a1, a2)
-}
+fun bisectorByPoints(a: Point, b: Point): Line = TODO()
 
 /**
  * Средняя (3 балла)
@@ -248,7 +246,6 @@ fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
  * (построить окружность по трём точкам, или
  * построить окружность, описанную вокруг треугольника - эквивалентная задача).
  */
-// ид
 fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
     val ox = (min(min(a.x, b.x), c.x) + max(max(a.x, b.x), c.x)) / 2
     val oy = (min(min(a.y, b.y), c.y) + max(max(a.y, b.y), c.y)) / 2
@@ -277,10 +274,10 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun printer(a: Circle)
-{
+fun printer(a: Circle) {
     println("x=${a.center.x}\ty=${a.center.y}\tr=${a.radius}\t")
 }
+
 fun minCircle(points: List<Point>): Circle {
     var out = circleByThreePoints(points[0], points[1], points[2])
     for (i in 3 until points.size) {
@@ -330,6 +327,7 @@ fun minCircle(points: List<Point>): Circle {
     }
     return out
 }
+
 fun minContainingCircle(vararg points: Point): Circle = when (points.size) {
     0 -> throw IllegalArgumentException()
     1 -> Circle(points[0], 0.0)
