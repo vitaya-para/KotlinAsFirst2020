@@ -2,9 +2,10 @@
 
 package lesson6.task1
 
-import java.lang.Exception
 import java.lang.IllegalArgumentException
 import java.util.*
+import kotlin.Exception
+import kotlin.math.abs
 
 
 // Урок 6: разбор строк, исключения
@@ -146,32 +147,33 @@ fun bestHighJump(jumps: String): Int = TODO()
 fun plusMinus(expression: String): Int {
 
     val parts = expression.split(" ")
-    fun illegalNumber(i: Int) = parts[i].length > 1 && parts[i].first() !in ('1'..'9')
 
+    var result = 0
+    var sign = 1
+    var count = 0
 
-    try {
-        if (illegalNumber(0))
-            throw Exception("")
+    for (elem in parts) {
 
-        var result = parts[0].toInt()
-
-        for (i in 1 until parts.size step 2) {
-            if (illegalNumber(i + 1))
-                throw Exception("")
-            if (parts[i] == "+")
-                result += parts[i + 1].toInt()
-            else if (parts[i] == "-")
-                result -= parts[i + 1].toInt()
-            else
-                throw Exception("")
+        if (elem.matches(Regex("""([1-9][\d]*)|(0)""")) && count % 2 == 0) {
+            result += sign * elem.toInt()
+            count = 1
         }
-        return result
+        else if (count % 2 == 1) {
+            sign = when (elem) {
+                "+" -> 1
+                "-" -> -1
+                else -> throw IllegalArgumentException("")
+            }
+            count = 0
+        }
+        else
+            throw IllegalArgumentException("")
 
-    } catch (e: Exception) {
-        throw IllegalArgumentException("")
     }
-
+    return result
 }
+
+
 
 /**
  * Сложная (6 баллов)
