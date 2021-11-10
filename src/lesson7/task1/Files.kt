@@ -259,14 +259,12 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
 
     for (line in File(inputName).readLines()) {
         val letters = line.lowercase().toCharArray().toSet()
+        if (letters.size == 1 && line.length > 1)
+            continue
         words[line] = letters.size
         max = max(max, letters.size)
     }
 
-    if (words.size < 2) {
-        writer.write("")
-        return
-    }
 
     for ((word, count) in words) {
         if (count == max)
@@ -323,9 +321,7 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    TODO()
-}
-/*
+
     val stack = ArrayDeque<String>()
     stack.push("</p>")
 
@@ -396,7 +392,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         it.write("</p></body></html>")
     }
 
-} */
+}
 
 /**
  * Сложная (23 балла)
