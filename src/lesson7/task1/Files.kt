@@ -383,7 +383,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
                 }
                 catch (e: StringIndexOutOfBoundsException) {
-                        newLine += stack.pop()
+                        newLine += ""
                 }
             }
 
