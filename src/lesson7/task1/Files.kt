@@ -259,8 +259,12 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
 
     for (line in File(inputName).readLines()) {
         val letters = line.lowercase().toCharArray().toSet()
-        if (letters.size == 1 && line.length > 1)
-            continue
+        if (letters.size == 1) {
+            if (line.length == 1)
+                result += line
+            else
+                continue
+        }
         words[line] = letters.size
         max = max(max, letters.size)
     }
