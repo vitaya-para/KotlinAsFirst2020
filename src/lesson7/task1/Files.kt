@@ -2,6 +2,7 @@
 
 package lesson7.task1
 
+import ru.spbstu.wheels.stack
 import java.io.File
 import java.util.*
 import kotlin.math.max
@@ -266,7 +267,6 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
         }
     }
 
-
     for ((word, count) in words) {
         if (count == max)
             result += if (result.isEmpty()) word else ", $word"
@@ -323,74 +323,83 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
-    val stack = ArrayDeque<String>()
-    stack.push("</p>")
+    var tags = listOf("<html>", "<body>", "<p>")
+    val stackOfTags = ArrayDeque<String>()
 
     File(outputName).bufferedWriter().use {
-        it.write("<html><body><p>")
+
+        for (tag in tags) {
+            it.write(tag)
+            it.newLine()
+        }
 
         for (line in File(inputName).readLines()) {
             if (line.isEmpty()) {
-                if ("<p>"[1] === stack.peek()[2]) {
-                    it.write("</p>")
-                    it.write( "<p>"
-                    )
-                }
-                else {
-                    it.write("<p>")
-                    stack.add("</p>")
-                }
+                it.write("</p>")
+                it.newLine()
+                it.write("<p>")
+                it.newLine()
                 continue
             }
 
+            val symbols = line.toCharArray()
             var newLine = ""
             var i = 0
-            while (i < line.length) {
-                try {
-                    if (line[i] == '*' && line[i + 1] == '*') {
-                        if (stack.isNotEmpty() && stack.peek()[2] == 'b')
-                            newLine += stack.pop()
-                        else {
+
+            while (i < symbols.size) {
+
+                if (symbols[i] == '*') {
+                    if (i + 1 < symbols.size && symbols[i + 1] == '*') {
+                        if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<b>" && symbols[i - 1] != ' ') {
+                            newLine += stackOfTags.pop().replace("<", "</")
+                            i += 2
+                        }
+                        else if (symbols[i + 2] != ' ') {
+                            stackOfTags.push("<b>")
                             newLine += "<b>"
-                            stack.push("</b>")
+                            i += 2
                         }
-                        i += 2
                     }
-
-                    else if (line[i] == '*' && line[i + 1] != ' ') {
-                        if (stack.isNotEmpty() && stack.peek()[2] == 'i')
-                            newLine += stack.pop()
-                        else {
-                            newLine += "<i>"
-                            stack.push("</i>")
-                        }
-                        i += 1
-                    }
-
-                    else if (line[i] == '~' && line[i + 1] == '~') {
-                        if (stack.isNotEmpty() && stack.peek()[2] == 's')
-                            newLine += stack.pop()
-                        else {
-                            newLine += "<s>"
-                            stack.push("</s>")
-                        }
-                        i += 2
-                    }
-
-                    else {
-                        newLine += line[i]
+                    else if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<i>" && symbols[i - 1] != ' ') {
+                        newLine += stackOfTags.pop().replace("<", "</")
                         i++
                     }
+                    else if (i + 1 < symbols.size && symbols[i + 1] != ' ' || i + 1 == symbols.size) {
+                        stackOfTags.push("<i>")
+                        newLine += "<i>"
+                        i++
+                    }
+                }
 
+                else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
+                    if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>" && symbols[i - 1] != ' ') {
+                        newLine += stackOfTags.pop().replace("<", "</")
+                        i += 2
+                    }
+                    else if (symbols[i + 2] != ' ') {
+                        stackOfTags.push("<s>")
+                        newLine += "<s>"
+                        i += 2
+                    }
                 }
-                catch (e: StringIndexOutOfBoundsException) {
-                        newLine += ""
+                else {
+                    newLine += symbols[i]
+                    i++
                 }
+
             }
-
+            println("${if (stackOfTags.isNotEmpty()) stackOfTags.peek() else 0}  $line")
             it.write(newLine)
+            it.newLine()
+
         }
-        it.write("</p></body></html>")
+
+        tags = tags.reversed()
+        for (tag in tags) {
+            it.write(tag.replace("<", "</"))
+            it.newLine()
+        }
+
     }
 
 }
