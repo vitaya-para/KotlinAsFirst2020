@@ -268,8 +268,10 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
     }
 
     for ((word, count) in words) {
-        if (count == max)
-            result += if (result.isEmpty()) word else ", $word"
+        if (count == max) {
+            if (word !in result)
+                result += if (result.isEmpty()) word else ", $word"
+        }
     }
 
     writer.write(result)
