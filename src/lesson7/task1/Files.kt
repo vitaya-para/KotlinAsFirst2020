@@ -352,46 +352,43 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     if (i + 1 < symbols.size && symbols[i + 1] == '*') {
                         if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<b>" && symbols[i - 1] != ' ') {
                             newLine += stackOfTags.pop().replace("<", "</")
-                            i += 2
-                        }
-                        else if (symbols[i + 2] != ' ') {
+                            //i += 2
+                        } else if (symbols[i + 2] != ' ') {
                             stackOfTags.push("<b>")
                             newLine += "<b>"
-                            i += 2
-                        }
-                    }
-                    else if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<i>" && symbols[i - 1] != ' ') {
-                        newLine += stackOfTags.pop().replace("<", "</")
+                            //i += 2
+                        } else
+                            newLine += "**"
                         i++
                     }
+                    else if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<i>" && symbols[i - 1] != ' ')
+                        newLine += stackOfTags.pop().replace("<", "</")
                     else if (i + 1 < symbols.size && symbols[i + 1] != ' ' || i + 1 == symbols.size) {
                         stackOfTags.push("<i>")
                         newLine += "<i>"
-                        i++
-                    }
+                    } else
+                        newLine += "*"
+                    i++
                 }
-
                 else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
-                    if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>" && symbols[i - 1] != ' ') {
+                    if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>" && symbols[i - 1] != ' ')
                         newLine += stackOfTags.pop().replace("<", "</")
-                        i += 2
-                    }
                     else if (symbols[i + 2] != ' ') {
                         stackOfTags.push("<s>")
                         newLine += "<s>"
-                        i += 2
                     }
+                    else
+                        newLine += "~~"
+                    i += 2
                 }
                 else {
                     newLine += symbols[i]
                     i++
                 }
-
             }
-            println("${if (stackOfTags.isNotEmpty()) stackOfTags.peek() else 0}  $line")
+
             it.write(newLine)
             it.newLine()
-
         }
 
         tags = tags.reversed()
