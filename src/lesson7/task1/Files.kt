@@ -327,7 +327,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
     var tags = listOf("<html>", "<body>", "<p>")
     val stackOfTags = ArrayDeque<String>()
-    var newParagraph = true
+    var newParagraph = false
 
     File(outputName).bufferedWriter().use {
 
