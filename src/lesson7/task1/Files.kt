@@ -371,7 +371,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     i++
                 }
                 else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
-                    if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>" && symbols[i - 1] != ' ')
+                    if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>" && i - 1 != -1 && symbols[i - 1] != ' ')
                         newLine += stackOfTags.pop().replace("<", "</")
                     else if (symbols[i + 2] != ' ') {
                         stackOfTags.push("<s>")
