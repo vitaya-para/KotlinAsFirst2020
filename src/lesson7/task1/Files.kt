@@ -327,6 +327,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
     var tags = listOf("<html>", "<body>", "<p>")
     val stackOfTags = ArrayDeque<String>()
+    var newParagraph = true
 
     File(outputName).bufferedWriter().use {
 
@@ -336,14 +337,16 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         }
 
         for (line in File(inputName).readLines()) {
-            if (line.isEmpty()) {
+            if (line.isEmpty() && newParagraph) {
                 it.write("</p>")
                 it.newLine()
                 it.write("<p>")
                 it.newLine()
+                newParagraph = false
                 continue
             }
 
+            newParagraph = true
             val symbols = line.toCharArray()
             var newLine = ""
             var i = 0
@@ -354,15 +357,12 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     if (i + 1 < symbols.size && symbols[i + 1] == '*') {
                         if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<b>") {
                             newLine += stackOfTags.pop().replace("<", "</")
-                            //i += 2
                         } else {
                             stackOfTags.push("<b>")
                             newLine += "<b>"
-                            //i += 2
                         }
                         i++
-                    }
-                    else if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<i>")
+                    } else if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<i>")
                         newLine += stackOfTags.pop().replace("<", "</")
                     else {
                         stackOfTags.push("<i>")
@@ -370,8 +370,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     }
 
                     i++
-                }
-                else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
+                } else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
                     if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>")
                         newLine += stackOfTags.pop().replace("<", "</")
                     else {
@@ -379,8 +378,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                         newLine += "<s>"
                     }
                     i += 2
-                }
-                else {
+                } else {
                     newLine += symbols[i]
                     i++
                 }
