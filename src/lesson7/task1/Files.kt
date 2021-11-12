@@ -355,7 +355,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                         if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<b>" && symbols[i - 1] != ' ') {
                             newLine += stackOfTags.pop().replace("<", "</")
                             //i += 2
-                        } else if (symbols[i + 2] != ' ') {
+                        } else if (i + 2== symbols.size || symbols[i + 2] != ' ') {
                             stackOfTags.push("<b>")
                             newLine += "<b>"
                             //i += 2
@@ -375,7 +375,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                 else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
                     if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>" && i - 1 != -1 && symbols[i - 1] != ' ')
                         newLine += stackOfTags.pop().replace("<", "</")
-                    else if (symbols[i + 2] != ' ') {
+                    else if (i + 2 == symbols.size || symbols[i + 2] != ' ') {
                         stackOfTags.push("<s>")
                         newLine += "<s>"
                     }
