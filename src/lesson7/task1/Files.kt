@@ -327,7 +327,8 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
     var tags = listOf("<html>", "<body>", "<p>")
     val stackOfTags = ArrayDeque<String>()
-    var newParagraph = false
+    val allLines = File(inputName).readLines()
+    var needEnd = true
 
     File(outputName).bufferedWriter().use {
 
@@ -336,19 +337,18 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
             it.newLine()
         }
 
-        for (line in File(inputName).readLines()) {
-            if (line.isBlank()) {
-                if (newParagraph) {
-                    it.write("</p>")
-                    it.newLine()
-                    it.write("<p>")
-                    it.newLine()
-                    newParagraph = false
-                }
+        for (line in allLines) {
+
+            if (line.isBlank())
                 continue
+
+            val index = allLines.indexOf(line)
+            if (index != 0 && allLines[index - 1].isBlank() && !needEnd) {
+                it.write("<p>")
+                it.newLine()
+                needEnd = true
             }
 
-            newParagraph = true
             val symbols = line.toCharArray()
             var newLine = ""
             var i = 0
@@ -388,14 +388,25 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
             it.write(newLine)
             it.newLine()
+
+            if (index != allLines.size - 1 && allLines[index + 1].isBlank() && needEnd) {
+                it.write("</p>")
+                it.newLine()
+                needEnd = false
+            }
+
+
         }
 
-        tags = tags.reversed()
+        if (needEnd) {
+            it.write("</p>")
+            it.newLine()
+        }
+        tags = tags.reversed().subList(1, 3)
         for (tag in tags) {
             it.write(tag.replace("<", "</"))
             it.newLine()
         }
-
     }
 
 }
