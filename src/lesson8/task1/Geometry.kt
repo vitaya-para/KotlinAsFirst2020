@@ -274,21 +274,17 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun printer(a: Circle) {
-    println("x=${a.center.x}\ty=${a.center.y}\tr=${a.radius}\t")
-}
-
 fun minCircle(points: List<Point>): Circle {
     var out = circleByThreePoints(points[0], points[1], points[2])
     for (i in 3 until points.size) {
         val elem1 = points[i]
         if (out.contains(elem1)) continue
-        var cp = Circle(elem1, -1.0)
+        var preCircle = Circle(elem1, -1.0)
         for (j in 0..i) {
             val elem2 = points[j]
             if (out.contains(elem2)) continue
-            if (cp.radius == -1.0) {
-                cp = circleByDiameter(Segment(elem1, elem2))
+            if (preCircle.radius == -1.0) {
+                preCircle = circleByDiameter(Segment(elem1, elem2))
             } else {
                 val pq = elem2.subtract(elem1)
                 var left = Circle(Point(0.0, 0.0), -1.0)
@@ -296,24 +292,24 @@ fun minCircle(points: List<Point>): Circle {
                 val circ = circleByDiameter(Segment(elem1, elem2))
                 for (k in 0..j) {
                     val elem3 = points[k]
-                    if (cp.contains(elem3)) continue
+                    if (preCircle.contains(elem3)) continue
                     val cross = pq.cross(elem3.subtract(elem1))
-                    val tmp = circleByThreePoints(elem1, elem2, elem3)
-                    if (tmp.radius == 0.0) continue;
-                    else if (cross > 0 && (left.radius == -1.0 || pq.cross(tmp.center.subtract(elem1)) > pq.cross(
+                    val probableCircle = circleByThreePoints(elem1, elem2, elem3)
+                    if (probableCircle.radius == 0.0) continue
+                    else if (cross > 0 && (left.radius == -1.0 || pq.cross(probableCircle.center.subtract(elem1)) > pq.cross(
                             left.center.subtract(
                                 elem1
                             )
                         ))
                     )
-                        left = tmp;
-                    else if (cross < 0 && (right.radius == -1.0 || pq.cross(tmp.center.subtract(elem1)) < pq.cross(
+                        left = probableCircle
+                    else if (cross < 0 && (right.radius == -1.0 || pq.cross(probableCircle.center.subtract(elem1)) < pq.cross(
                             right.center.subtract(
                                 elem1
                             )
                         ))
                     )
-                        right = tmp;
+                        right = probableCircle
                 }
                 out = when {
                     left.radius == -1.0 && right.radius == -1.0 -> circ

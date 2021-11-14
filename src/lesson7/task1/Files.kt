@@ -90,7 +90,7 @@ fun deleteMarked(inputName: String, outputName: String) {
 fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
     val statistic = substrings.map { it to 0 }.toMutableMap()
     val input = File(inputName).readLines().toString().lowercase().toMutableList()
-    for (i in substrings) {
+    for (i in substrings.toSet()) {
         val copyInpt = input.toMutableList() //для копирования по значению, а не по ссылке
         val lCase = i.lowercase()
         var pos = copyInpt.joinToString("").indexOf(lCase)
@@ -218,8 +218,8 @@ fun alignFileByWidth(inputName: String, outputName: String) {
                 else {
                     append(word)
                     val logic = needSpace.toFloat() / countWords > (needSpace / countWords).toFloat()
-                    append(getSpace((needSpace / countWords).toInt()))
-                    needSpace -= (needSpace / countWords).toInt()
+                    append(getSpace(needSpace / countWords))
+                    needSpace -= (needSpace / countWords)
                     if (logic) {
                         append(' ')
                         needSpace--
@@ -408,8 +408,6 @@ class MyArrayDeque(__writer: BufferedWriter) {
         else -> this.push(str)
     }
 
-    fun last(): String = stack.last()
-
     fun isEmpty(): Boolean = stack.isEmpty()
 
     fun downTo(level: Int) {
@@ -425,34 +423,37 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     stack.push("html")
     stack.push("body")
     stack.push("p")
+    var textStarted = false
     for (line in File(inputName).readLines()) {
         if (line == "") {
-            stack.pop()
-            stack.push("p")
+            if (textStarted) {
+                stack.pop()
+                stack.push("p")
+            }
             continue
         }
-
-        val bufSz = 2
-        val buffer = MutableList<Char>(bufSz) { '' }//U+0000
+        textStarted = true
+        val bufferSize = 2
+        val buffer = MutableList<Char>(bufferSize) { '' }//U+0000
         var runner = 2
         val keyChars = listOf<Char>('*', '~')
         for (i in line) {
-            buffer[runner % bufSz] = i
+            buffer[runner % bufferSize] = i
             when {
                 //s
-                i == '~' && buffer[(runner - 1) % bufSz] == '~' -> {
+                i == '~' && buffer[(runner - 1) % bufferSize] == '~' -> {
                     stack.newTag("s")
-                    buffer[(runner - 1) % bufSz] = ''//U+0000
-                    buffer[(runner) % bufSz] = ''//U+0000
+                    buffer[(runner - 1) % bufferSize] = ''//U+0000
+                    buffer[(runner) % bufferSize] = ''//U+0000
                 }
                 //b
-                i == '*' && buffer[(runner - 1) % bufSz] == '*' -> {
+                i == '*' && buffer[(runner - 1) % bufferSize] == '*' -> {
                     stack.newTag("b")
-                    buffer[(runner - 1) % bufSz] = ''//U+0000
-                    buffer[(runner) % bufSz] = ''//U+0000
+                    buffer[(runner - 1) % bufferSize] = ''//U+0000
+                    buffer[(runner) % bufferSize] = ''//U+0000
                 }
                 //i
-                buffer[(runner - 1) % bufSz] == '*' -> {
+                buffer[(runner - 1) % bufferSize] == '*' -> {
                     stack.newTag("i")
                     if (i != '~')
                         writer.write(i.toString())
@@ -462,13 +463,16 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                 }
 
                 else -> {
-                    if (buffer[(runner - 1) % bufSz] == '~')
-                        writer.write(buffer[(runner - 1) % bufSz].toString())
+                    if (buffer[(runner - 1) % bufferSize] == '~')
+                        writer.write(buffer[(runner - 1) % bufferSize].toString())
                     writer.write(i.toString())
                 }
             }
             runner++
         }
+        //проверка на остаток в буфере '*'
+        if (buffer[runner % bufferSize] == 'i')
+            stack.newTag("i")
     }
     while (!stack.isEmpty())
         stack.pop()
@@ -583,12 +587,16 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
     stack.push("html")
     stack.push("body")
     stack.push("p")
+    var textStarted = false
     for (line in File(inputName).readLines()) {
         if (line == "") {
-            stack.pop()
-            stack.push("p")
+            if (textStarted) {
+                stack.pop()
+                stack.push("p")
+            }
             continue
         }
+        textStarted = true
         var checkedLine = line
 
         if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
@@ -609,7 +617,7 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
             if (stack.getDepth() != -1)
                 stack.push("li")
             //обрезаем строку
-            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)!!.value.length ?: 0
+            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)?.value?.length ?: 0
             line.substring(a, line.length).also { checkedLine = it }
 
         } else {
@@ -637,12 +645,16 @@ fun markdownToHtml(inputName: String, outputName: String) {
     stack.push("html")
     stack.push("body")
     stack.push("p")
+    var textStarted = false
     for (line in File(inputName).readLines()) {
         if (line == "") {
-            stack.pop()
-            stack.push("p")
+            if (textStarted) {
+                stack.pop()
+                stack.push("p")
+            }
             continue
         }
+        textStarted = true
         var checkedLine = line
 
         if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
@@ -663,7 +675,7 @@ fun markdownToHtml(inputName: String, outputName: String) {
             if (stack.getDepth() != -1)
                 stack.push("li")
             //обрезаем строку
-            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)!!.value.length ?: 0
+            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)?.value?.length ?: 0
             line.substring(a, line.length).also { checkedLine = it }
 
         } else {
@@ -707,6 +719,8 @@ fun markdownToHtml(inputName: String, outputName: String) {
             }
             runner++
         }
+        if (buffer[runner % bufSz] == 'i')
+            stack.newTag("i")
     }
     while (!stack.isEmpty())
         stack.pop()
@@ -793,12 +807,18 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         difference = minuend - subtrahend
         space = lhvLight
     }
-
-    space++
-    writer.appendLine(
-        " $lhv | $rhv\n-${subtrahend}${getSpace(lhvLight + 3 - subtrahend.length())}${lhv / rhv}\n" +
-                "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
-    ) // длина числа и 3 символа " | "
+    if (subtrahend == 0 && lhv.length() > 1) {
+        writer.appendLine(
+            "$lhv | $rhv\n${getSpace(minuend.length() - 2)}-$subtrahend   ${lhv / rhv}\n" +
+                    "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
+        )// -2 из-за строки "-0"
+    } else {
+        space++
+        writer.appendLine(
+            " $lhv | $rhv\n-${subtrahend}${getSpace(lhvLight + 3 - subtrahend.length())}${lhv / rhv}\n" +
+                    "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
+        ) // длина числа и 3 символа " | "
+    }
     for (i in lhv.toString().substring(minuend.length(), lhvLight)) {
         space++
         writer.appendLine(getSpace(space - difference.length() - 1) + "$difference$i")//-1 тк новый символ

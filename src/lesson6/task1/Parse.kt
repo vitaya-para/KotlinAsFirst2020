@@ -187,7 +187,6 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    //считаю, что запись вида - 2 + 1 является некорректной
     if (Regex("""[^0-9 +-]""").containsMatchIn(expression))
         throw IllegalArgumentException("Error")
 
@@ -283,8 +282,7 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
-    if (roman == "") return 0
-    if (Regex("""[^IVXLCDM]""").containsMatchIn(roman)) return -1
+    if (Regex("""[^IVXLCDM]""").containsMatchIn(roman) || roman == "") return -1
     val assoc = mapOf<Char, Int>(
         'I' to 1,
         'V' to 5,

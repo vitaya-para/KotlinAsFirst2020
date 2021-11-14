@@ -103,13 +103,9 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
  */
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val res = mutableMapOf<Int, MutableList<String>>()
-    for (i in grades) {
-        if (res[i.value] !== null)
-            res[i.value]!!.add(i.key)
-        else
-            res[i.value] = mutableListOf(i.key)
-    }
-    return res.toMap()
+    for ((key, value) in grades)
+        res[value]?.add(key) ?: run { res[value] = mutableListOf(key) }
+    return res
 }
 
 /**
@@ -145,8 +141,7 @@ fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
  */
 fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>) {
     for ((key, value) in b)
-        if (a[key] == value)
-            a.remove(key, value)
+        a.remove(key, value)
 }
 
 /**
@@ -208,12 +203,12 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
 fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
     val preRes = mutableMapOf<String, Pair<Double, Int>>()
     for ((k, v) in stockPrices)
-        preRes[k] = (preRes[k] + Pair(v, 1)) ?: Pair(v, 1)
+        preRes[k] = (preRes[k] ?: Pair(0.0, 0)) + Pair(v, 1)
     return preRes.map { it.key to it.value.first / it.value.second }.toMap()
 }
 
-private operator fun Pair<Double, Int>?.plus(pair: Pair<Double, Int>): Pair<Double, Int>? {
-    return (Pair(this?.first?.plus(pair.first) ?: return null, this!!.second + pair.second))
+private operator fun Pair<Double, Int>.plus(pair: Pair<Double, Int>): Pair<Double, Int> {
+    return (Pair(this.first.plus(pair.first), this.second + pair.second))
 }
 
 /**
@@ -252,7 +247,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean =
-    word.lowercase(Locale.getDefault()).toSet().sorted() == chars.map { it.lowercaseChar() }.toSet().sorted()
+    chars.map { it.lowercaseChar() }.sorted().distinct().containsAll(word.lowercase(Locale.getDefault()).toSet())
             || word.isEmpty()
 
 /**
