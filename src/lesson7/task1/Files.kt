@@ -473,9 +473,9 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 Утка по-пекински
 <ul>
 <li>Утка</li>
-<li>Соус</li>
-</ul>
-</li>
+<li>Соус</li>                  li - пункт
+</ul>                          ol - нумерованный
+</li>                          Ul - ненумерованный
 <li>
 Салат Оливье
 <ol>
