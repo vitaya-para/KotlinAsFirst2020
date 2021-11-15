@@ -517,21 +517,26 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
 
 
     for (tag in tags) {
-        writer.write(tag)
+        writer.write(tag)       // самый последний тег не работает!
         writer.newLine()
     }
 
     if (allLines[0].first() == '*') {
         writer.write("<ul>")
-        writer.newLine()
-    } else {
-        writer.write("<ol>")
-        writer.newLine()
+        stack.push(Pair("</ul>", -1))
     }
+    else {
+        writer.write("<ol>")
+        stack.push(Pair("</ol>", -1))
+    }
+    writer.newLine()
 
     for ((index, line) in allLines.withIndex()) {
 
         if (line == allLines.last()) {
+
+            writer.write("<li>${line.replace(Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])"""), "")}</li>")
+            writer.newLine()
             while (stack.isNotEmpty()) {
                 writer.write(stack.pop().first)
                 writer.newLine()
@@ -547,30 +552,30 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
 
         writer.write("<li>${line.replace(Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])"""), "")}")
 
-        if (nextDepth == curDepth) {
-            writer.write("</li>")
-            writer.newLine()
-        }
-        else if (nextDepth > curDepth) {
+
+        if (nextDepth > curDepth) {
             stack.push(Pair("</li>", curDepth))
             writer.newLine()
 
             if (allLines[index + 1].contains(Regex("""([\d]+. )"""))) {
                 writer.write("<ol>")
                 stack.push(Pair("</ol>", curDepth))
-            }
-            else {
+            } else {
                 writer.write("<ul>")
                 stack.push(Pair("</ul>", curDepth))
             }
             writer.newLine()
-        }
-        else {
-            while (stack.isNotEmpty() && stack.peek().second >= nextDepth) {
-                writer.write(stack.pop().first)
-                writer.newLine()
+        } else {
+            writer.write("</li>")
+            writer.newLine()
+            if (nextDepth < curDepth) {
+                while (stack.isNotEmpty() && stack.peek().second >= nextDepth) {
+                    writer.write(stack.pop().first)
+                    writer.newLine()
+                }
             }
         }
+
     }
 
     for (tag in tags.reversed()) {
@@ -580,6 +585,7 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
 
 
     writer.close()
+
 }
 
 
