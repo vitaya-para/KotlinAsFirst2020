@@ -2,6 +2,7 @@
 
 package lesson7.task1
 
+import ru.spbstu.wheels.NullableMonad.map
 import ru.spbstu.wheels.stack
 import java.io.File
 import java.util.*
@@ -509,8 +510,78 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-    TODO()
+    val tags = listOf("<html>", "<body>", "<p>")
+    val stack = ArrayDeque<Pair<String, Int>>()                // тег, его глубина
+    val writer = File(outputName).bufferedWriter()
+    val allLines = File(inputName).readLines()
+
+
+    for (tag in tags) {
+        writer.write(tag)
+        writer.newLine()
+    }
+
+    if (allLines[0].first() == '*') {
+        writer.write("<ul>")
+        writer.newLine()
+    } else {
+        writer.write("<ol>")
+        writer.newLine()
+    }
+
+    for ((index, line) in allLines.withIndex()) {
+
+        if (line == allLines.last()) {
+            while (stack.isNotEmpty()) {
+                writer.write(stack.pop().first)
+                writer.newLine()
+            }
+            break
+        }
+
+        fun countDepth(line: String) =
+            ((Regex("""[\s]+[\S]?""").find(line).map { it.groupValues[0] }?.length ?: 0) - 1) / 4
+
+        val curDepth = countDepth(line)
+        val nextDepth = countDepth(allLines[index + 1])
+
+        writer.write("<li>${line.replace(Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])"""), "")}")
+
+        if (nextDepth == curDepth) {
+            writer.write("</li>")
+            writer.newLine()
+        }
+        else if (nextDepth > curDepth) {
+            stack.push(Pair("</li>", curDepth))
+            writer.newLine()
+
+            if (allLines[index + 1].contains(Regex("""([\d]+. )"""))) {
+                writer.write("<ol>")
+                stack.push(Pair("</ol>", curDepth))
+            }
+            else {
+                writer.write("<ul>")
+                stack.push(Pair("</ul>", curDepth))
+            }
+            writer.newLine()
+        }
+        else {
+            while (stack.isNotEmpty() && stack.peek().second >= nextDepth) {
+                writer.write(stack.pop().first)
+                writer.newLine()
+            }
+        }
+    }
+
+    for (tag in tags.reversed()) {
+        writer.write(tag.replace("<", "</"))
+        writer.newLine()
+    }
+
+
+    writer.close()
 }
+
 
 /**
  * Очень сложная (30 баллов)
