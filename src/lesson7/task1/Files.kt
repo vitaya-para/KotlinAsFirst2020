@@ -3,9 +3,11 @@
 package lesson7.task1
 
 import ru.spbstu.wheels.NullableMonad.map
-import ru.spbstu.wheels.stack
+// import sun.jvm.hotspot.ui.tree.SimpleTreeNode
 import java.io.File
+import java.lang.StringBuilder
 import java.util.*
+import javax.swing.text.ParagraphView
 import kotlin.math.max
 
 // Урок 7: работа с файлами
@@ -99,7 +101,7 @@ fun sibilants(inputName: String, outputName: String) {
 
     val writer = File(outputName).bufferedWriter()
     val letters = mapOf('ы' to 'и', 'Ы' to 'И', 'я' to 'а', 'Я' to 'А', 'ю' to 'у', 'Ю' to 'У')
-    val hissing = listOf('ж', 'ч', 'ш', 'щ', 'Ж', 'Ч', 'Ш', 'Щ')
+    val hissing = setOf('ж', 'ч', 'ш', 'щ', 'Ж', 'Ч', 'Ш', 'Щ')
 
     writer.use {
         for (line in File(inputName).readLines()) {
@@ -256,8 +258,7 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
 
     val words = mutableMapOf<String, Int>()
     var max = 0
-    var result = ""
-    val writer = File(outputName).bufferedWriter()
+
 
     for (line in File(inputName).readLines()) {
         val letters = line.lowercase().toCharArray().toSet()
@@ -268,15 +269,18 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
         }
     }
 
-    for ((word, count) in words) {
-        if (count == max) {
-            if (word !in result)
-                result += if (result.isEmpty()) word else ", $word"
-        }
+    File(outputName).bufferedWriter().use { writer ->
+        writer.write(words.filter { it.value == max }.keys.joinToString(separator = ", "))
     }
 
-    writer.write(result)
-    writer.close()
+    /*
+ val result = StringBuilder("")
+ for ((word, count) in words) {
+     if (count == max)
+         result.append(if (result.isEmpty()) word else ", $word")
+ }
+
+ */
 }
 
 /**
@@ -326,68 +330,73 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
-    var tags = listOf("<html>", "<body>", "<p>")
+    var tags = mutableListOf("<html>", "<body>", "<p>")
     val stackOfTags = ArrayDeque<String>()
     val allLines = File(inputName).readLines()
     var needEnd = true
 
+
+
     File(outputName).bufferedWriter().use {
 
-        for (tag in tags) {
-            it.write(tag)
-            it.newLine()
+        fun writeBoundaryTags() {
+            for (tag in tags) {
+                it.write(tag)
+                it.newLine()
+            }
         }
 
-        for (line in allLines) {
+        writeBoundaryTags()
+
+        for ((index, line) in allLines.withIndex()) {
 
             if (line.isBlank())
                 continue
 
-            val index = allLines.indexOf(line)
+
             if (index != 0 && allLines[index - 1].isBlank() && !needEnd) {
                 it.write("<p>")
                 it.newLine()
                 needEnd = true
             }
 
+
             val symbols = line.toCharArray()
-            var newLine = ""
+            val newLine = StringBuilder("")
             var i = 0
+
+            fun addToNewLine(tag: String) {
+
+                if (stackOfTags.isNotEmpty() && stackOfTags.peek() == tag) {
+                    newLine.append(stackOfTags.pop().replace("<", "</"))
+                } else {
+                    stackOfTags.push(tag)
+                    newLine.append(tag)
+                }
+            }
 
             while (i < symbols.size) {
 
                 if (symbols[i] == '*') {
                     if (i + 1 < symbols.size && symbols[i + 1] == '*') {
-                        if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<b>") {
-                            newLine += stackOfTags.pop().replace("<", "</")
-                        } else {
-                            stackOfTags.push("<b>")
-                            newLine += "<b>"
-                        }
+                        addToNewLine("<b>")
                         i++
-                    } else if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<i>")
-                        newLine += stackOfTags.pop().replace("<", "</")
-                    else {
-                        stackOfTags.push("<i>")
-                        newLine += "<i>"
                     }
-
+                    else
+                        addToNewLine("<i>")
                     i++
-                } else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
-                    if (stackOfTags.isNotEmpty() && stackOfTags.peek() == "<s>")
-                        newLine += stackOfTags.pop().replace("<", "</")
-                    else {
-                        stackOfTags.push("<s>")
-                        newLine += "<s>"
-                    }
+                }
+                else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
+                    addToNewLine("<s>")
                     i += 2
-                } else {
-                    newLine += symbols[i]
+                }
+                else {
+                    newLine.append(symbols[i])
                     i++
                 }
             }
 
-            it.write(newLine)
+            it.write(newLine.toString())
             it.newLine()
 
             if (index != allLines.size - 1 && allLines[index + 1].isBlank() && needEnd) {
@@ -395,19 +404,18 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                 it.newLine()
                 needEnd = false
             }
-
-
         }
+
 
         if (needEnd) {
             it.write("</p>")
             it.newLine()
         }
-        tags = tags.reversed().subList(1, 3)
-        for (tag in tags) {
-            it.write(tag.replace("<", "</"))
-            it.newLine()
-        }
+
+        tags.replaceAll { elem -> elem.replace("<", "</") }
+        tags = tags.reversed().toMutableList().subList(1, 3)
+
+        writeBoundaryTags()
     }
 
 }
@@ -524,8 +532,7 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
     if (allLines[0].first() == '*') {
         writer.write("<ul>")
         stack.push(Pair("</ul>", -1))
-    }
-    else {
+    } else {
         writer.write("<ol>")
         stack.push(Pair("</ol>", -1))
     }
