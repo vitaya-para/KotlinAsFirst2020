@@ -328,6 +328,8 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
+
+
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
     var tags = mutableListOf("<html>", "<body>", "<p>")
@@ -377,22 +379,27 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
 
             while (i < symbols.size) {
 
-                if (symbols[i] == '*') {
-                    if (i + 1 < symbols.size && symbols[i + 1] == '*') {
-                        addToNewLine("<b>")
+                when (symbols[i]) {
+                    '*' -> {
+                        if (i + 1 < symbols.size && symbols[i + 1] == '*') {
+                            addToNewLine("<b>")
+                            i++
+                        } else
+                            addToNewLine("<i>")
                         i++
                     }
-                    else
-                        addToNewLine("<i>")
-                    i++
-                }
-                else if (symbols[i] == '~' && i + 1 < symbols.size && symbols[i + 1] == '~') {
-                    addToNewLine("<s>")
-                    i += 2
-                }
-                else {
-                    newLine.append(symbols[i])
-                    i++
+
+                    '~' -> {
+                        if (i + 1 < symbols.size && symbols[i + 1] == '~') {
+                            addToNewLine("<s>")
+                            i += 2
+                        }
+                    }
+
+                    else -> {
+                        newLine.append(symbols[i])
+                        i++
+                    }
                 }
             }
 
@@ -524,8 +531,9 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
     val allLines = File(inputName).readLines()
 
 
+
     for (tag in tags) {
-        writer.write(tag)       // самый последний тег не работает!
+        writer.write(tag)
         writer.newLine()
     }
 
