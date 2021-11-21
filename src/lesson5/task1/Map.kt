@@ -104,7 +104,7 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val res = mutableMapOf<Int, MutableList<String>>()
     for ((key, value) in grades)
-        res[value]?.add(key) ?: run { res[value] = mutableListOf(key) }
+        res[value] = ((res[value] ?: mutableListOf()) + key) as MutableList<String>
     return res
 }
 
@@ -157,7 +157,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
     val res = mutableSetOf<String>()
     val hashtable: HashSet<String> = (if (a.size <= b.size) b else a).toHashSet()
     for (i in minList)
-        if (hashtable.contains(i))
+        if (i in hashtable)
             res += i
     return res.toList()
 }
@@ -207,9 +207,8 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
     return preRes.map { it.key to it.value.first / it.value.second }.toMap()
 }
 
-private operator fun Pair<Double, Int>.plus(pair: Pair<Double, Int>): Pair<Double, Int> {
-    return (Pair(this.first.plus(pair.first), this.second + pair.second))
-}
+private operator fun Pair<Double, Int>.plus(pair: Pair<Double, Int>): Pair<Double, Int> =
+    (Pair(this.first.plus(pair.first), this.second + pair.second))
 
 /**
  * Средняя (4 балла)
@@ -248,7 +247,6 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean =
     chars.map { it.lowercaseChar() }.sorted().distinct().containsAll(word.lowercase(Locale.getDefault()).toSet())
-            || word.isEmpty()
 
 /**
  * Средняя (4 балла)

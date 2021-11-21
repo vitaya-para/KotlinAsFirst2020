@@ -423,56 +423,64 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
     stack.push("html")
     stack.push("body")
     stack.push("p")
-    var textStarted = false
-    for (line in File(inputName).readLines()) {
-        if (line == "") {
-            if (textStarted) {
-                stack.pop()
-                stack.push("p")
+    var textStarted = true
+    for (line__ in File(inputName).readLines()) {
+        val linesArr = line__.split(("\\n").toString()).toTypedArray()
+        for (line in linesArr) {
+            if (line == "") {
+                if (!textStarted) {
+                    stack.pop()
+                    stack.push("p")
+                }
+                textStarted = true
+                continue
             }
-            continue
-        }
-        textStarted = true
-        val bufferSize = 2
-        val buffer = MutableList<Char>(bufferSize) { '' }//U+0000
-        var runner = 2
-        val keyChars = listOf<Char>('*', '~')
-        for (i in line) {
-            buffer[runner % bufferSize] = i
-            when {
-                //s
-                i == '~' && buffer[(runner - 1) % bufferSize] == '~' -> {
-                    stack.newTag("s")
-                    buffer[(runner - 1) % bufferSize] = ''//U+0000
-                    buffer[(runner) % bufferSize] = ''//U+0000
-                }
-                //b
-                i == '*' && buffer[(runner - 1) % bufferSize] == '*' -> {
-                    stack.newTag("b")
-                    buffer[(runner - 1) % bufferSize] = ''//U+0000
-                    buffer[(runner) % bufferSize] = ''//U+0000
-                }
-                //i
-                buffer[(runner - 1) % bufferSize] == '*' -> {
-                    stack.newTag("i")
-                    if (i != '~')
-                        writer.write(i.toString())
-                }
-                //single keyChar
-                keyChars.contains(i) -> {
-                }
+            textStarted = false
+            val bufferSize = 2
+            val buffer = MutableList<Char>(bufferSize) { '' }//U+0000
+            var runner = 2
+            val keyChars = listOf<Char>('*', '~')
+            for (i in line) {
+                buffer[runner % bufferSize] = i
+                when {
+                    i == '\n' -> {
 
-                else -> {
-                    if (buffer[(runner - 1) % bufferSize] == '~')
-                        writer.write(buffer[(runner - 1) % bufferSize].toString())
-                    writer.write(i.toString())
+                    }
+                    //s
+                    i == '~' && buffer[(runner - 1) % bufferSize] == '~' -> {
+                        stack.newTag("s")
+                        buffer[(runner - 1) % bufferSize] = ''//U+0000
+                        buffer[(runner) % bufferSize] = ''//U+0000
+                    }
+                    //b
+                    i == '*' && buffer[(runner - 1) % bufferSize] == '*' -> {
+                        stack.newTag("b")
+                        buffer[(runner - 1) % bufferSize] = ''//U+0000
+                        buffer[(runner) % bufferSize] = ''//U+0000
+                    }
+                    //i
+                    buffer[(runner - 1) % bufferSize] == '*' -> {
+                        stack.newTag("i")
+                        if (i != '~')
+                            writer.write(i.toString())
+                    }
+                    //single keyChar
+                    keyChars.contains(i) -> {
+                    }
+
+                    else -> {
+                        if (buffer[(runner - 1) % bufferSize] == '~')
+                            writer.write(buffer[(runner - 1) % bufferSize].toString())
+                        writer.write(i.toString())
+                    }
                 }
+                runner++
             }
-            runner++
+            //проверка на остаток в буфере '*'
+            if (buffer[runner % bufferSize] == 'i')
+                stack.newTag("i")
         }
-        //проверка на остаток в буфере '*'
-        if (buffer[runner % bufferSize] == 'i')
-            stack.newTag("i")
+
     }
     while (!stack.isEmpty())
         stack.pop()
@@ -587,44 +595,48 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
     stack.push("html")
     stack.push("body")
     stack.push("p")
-    var textStarted = false
-    for (line in File(inputName).readLines()) {
-        if (line == "") {
-            if (textStarted) {
-                stack.pop()
-                stack.push("p")
+    var textStarted = true
+    for (line__ in File(inputName).readLines()) {
+        val linesArr = line__.split(("\\n").toString()).toTypedArray()
+        for (line in linesArr) {
+            if (line == "") {
+                if (!textStarted) {
+                    stack.pop()
+                    stack.push("p")
+                }
+                textStarted = true
+                continue
             }
-            continue
-        }
-        textStarted = true
-        var checkedLine = line
+            textStarted = false
+            var checkedLine = line
 
-        if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
-            // проверка на то, нужно ли вообще париться с ol/ul/li
-            if (getLevel(line) == stack.getDepth()) {
-                stack.pop()
-            } else if (getLevel(line) > stack.getDepth()) //выбор между ol/ul
-            {
-                if (line.contains(Regex("""^[ ]*((\d+)?\. )""")))
-                    stack.push("ol") //Нумерованный список
-                else
-                    stack.push("ul")  //Ненумерованный список
+            if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
+                // проверка на то, нужно ли вообще париться с ol/ul/li
+                if (getLevel(line) == stack.getDepth()) {
+                    stack.pop()
+                } else if (getLevel(line) > stack.getDepth()) //выбор между ol/ul
+                {
+                    if (line.contains(Regex("""^[ ]*((\d+)?\. )""")))
+                        stack.push("ol") //Нумерованный список
+                    else
+                        stack.push("ul")  //Ненумерованный список
+                } else {
+                    //спускаемся до getLevel(line) уровня
+                    stack.downTo(getLevel(line))
+                    stack.pop()
+                }
+                if (stack.getDepth() != -1)
+                    stack.push("li")
+                //обрезаем строку
+                val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)?.value?.length ?: 0
+                line.substring(a, line.length).also { checkedLine = it }
+
             } else {
-                //спускаемся до getLevel(line) уровня
-                stack.downTo(getLevel(line))
-                stack.pop()
+                //закрываем все открытые теги (если нет вхождения в список, значит нужно спуститься до -1 уровня)
+                stack.downTo(-1)
             }
-            if (stack.getDepth() != -1)
-                stack.push("li")
-            //обрезаем строку
-            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)?.value?.length ?: 0
-            line.substring(a, line.length).also { checkedLine = it }
-
-        } else {
-            //закрываем все открытые теги (если нет вхождения в список, значит нужно спуститься до -1 уровня)
-            stack.downTo(-1)
+            writer.write(checkedLine)
         }
-        writer.write(checkedLine)
     }
     while (!stack.isEmpty())
         stack.pop()
@@ -645,82 +657,86 @@ fun markdownToHtml(inputName: String, outputName: String) {
     stack.push("html")
     stack.push("body")
     stack.push("p")
-    var textStarted = false
-    for (line in File(inputName).readLines()) {
-        if (line == "") {
-            if (textStarted) {
-                stack.pop()
-                stack.push("p")
+    var textStarted = true
+    for (line__ in File(inputName).readLines()) {
+        val linesArr = line__.split(("\\n").toString()).toTypedArray()
+        for (line in linesArr) {
+            if (line == "") {
+                if (!textStarted) {
+                    stack.pop()
+                    stack.push("p")
+                }
+                textStarted = true
+                continue
             }
-            continue
-        }
-        textStarted = true
-        var checkedLine = line
+            textStarted = false
+            var checkedLine = line
 
-        if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
-            // проверка на то, нужно ли вообще париться с ol/ul/li
-            if (getLevel(line) == stack.getDepth()) {
-                stack.pop()
-            } else if (getLevel(line) > stack.getDepth()) //выбор между ol/ul
-            {
-                if (line.contains(Regex("""^[ ]*((\d+)?\. )""")))
-                    stack.push("ol") //Нумерованный список
-                else
-                    stack.push("ul")  //Ненумерованный список
+            if (line.contains(Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )"""))) {
+                // проверка на то, нужно ли вообще париться с ol/ul/li
+                if (getLevel(line) == stack.getDepth()) {
+                    stack.pop()
+                } else if (getLevel(line) > stack.getDepth()) //выбор между ol/ul
+                {
+                    if (line.contains(Regex("""^[ ]*((\d+)?\. )""")))
+                        stack.push("ol") //Нумерованный список
+                    else
+                        stack.push("ul")  //Ненумерованный список
+                } else {
+                    //спускаемся до getLevel(line) уровня
+                    stack.downTo(getLevel(line))
+                    stack.pop()
+                }
+                if (stack.getDepth() != -1)
+                    stack.push("li")
+                //обрезаем строку
+                val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)?.value?.length ?: 0
+                line.substring(a, line.length).also { checkedLine = it }
+
             } else {
-                //спускаемся до getLevel(line) уровня
-                stack.downTo(getLevel(line))
-                stack.pop()
+                //закрываем все открытые теги (если нет вхождения в список, значит нужно спуститься до -1 уровня)
+                stack.downTo(-1)
             }
-            if (stack.getDepth() != -1)
-                stack.push("li")
-            //обрезаем строку
-            val a = Regex("""^[ ]*((\d+)?\. )|^[ ]*((\*) )""").find(line)?.value?.length ?: 0
-            line.substring(a, line.length).also { checkedLine = it }
+            val bufSz = 2
+            val buffer = MutableList<Char>(bufSz) { '' }//U+0000
+            var runner = 2
+            val keyChars = listOf<Char>('*', '~')
+            for (i in checkedLine) {
+                buffer[runner % bufSz] = i
+                when {
+                    //s
+                    i == '~' && buffer[(runner - 1) % bufSz] == '~' -> {
+                        stack.newTag("s")
+                        buffer[(runner - 1) % bufSz] = ''//U+0000
+                        buffer[(runner) % bufSz] = ''//U+0000
+                    }
+                    //b
+                    i == '*' && buffer[(runner - 1) % bufSz] == '*' -> {
+                        stack.newTag("b")
+                        buffer[(runner - 1) % bufSz] = ''//U+0000
+                        buffer[(runner) % bufSz] = ''//U+0000
+                    }
+                    //i
+                    buffer[(runner - 1) % bufSz] == '*' -> {
+                        stack.newTag("i")
+                        if (i != '~')
+                            writer.write(i.toString())
+                    }
+                    //single keyChar
+                    keyChars.contains(i) -> {
+                    }
 
-        } else {
-            //закрываем все открытые теги (если нет вхождения в список, значит нужно спуститься до -1 уровня)
-            stack.downTo(-1)
-        }
-        val bufSz = 2
-        val buffer = MutableList<Char>(bufSz) { '' }//U+0000
-        var runner = 2
-        val keyChars = listOf<Char>('*', '~')
-        for (i in checkedLine) {
-            buffer[runner % bufSz] = i
-            when {
-                //s
-                i == '~' && buffer[(runner - 1) % bufSz] == '~' -> {
-                    stack.newTag("s")
-                    buffer[(runner - 1) % bufSz] = ''//U+0000
-                    buffer[(runner) % bufSz] = ''//U+0000
-                }
-                //b
-                i == '*' && buffer[(runner - 1) % bufSz] == '*' -> {
-                    stack.newTag("b")
-                    buffer[(runner - 1) % bufSz] = ''//U+0000
-                    buffer[(runner) % bufSz] = ''//U+0000
-                }
-                //i
-                buffer[(runner - 1) % bufSz] == '*' -> {
-                    stack.newTag("i")
-                    if (i != '~')
+                    else -> {
+                        if (buffer[(runner - 1) % bufSz] == '~')
+                            writer.write(buffer[(runner - 1) % bufSz].toString())
                         writer.write(i.toString())
+                    }
                 }
-                //single keyChar
-                keyChars.contains(i) -> {
-                }
-
-                else -> {
-                    if (buffer[(runner - 1) % bufSz] == '~')
-                        writer.write(buffer[(runner - 1) % bufSz].toString())
-                    writer.write(i.toString())
-                }
+                runner++
             }
-            runner++
+            if (buffer[runner % bufSz] == 'i')
+                stack.newTag("i")
         }
-        if (buffer[runner % bufSz] == 'i')
-            stack.newTag("i")
     }
     while (!stack.isEmpty())
         stack.pop()

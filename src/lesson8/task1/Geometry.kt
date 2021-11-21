@@ -115,8 +115,8 @@ fun diameter(vararg points: Point): Segment {
     if (points.size < 2) throw IllegalArgumentException("Error")
     var maxi = Double.MIN_VALUE
     var out = listOf<Int>(-1, -1)
-    for (i in points.size - 1 downTo 0)
-        for (j in i - 1 downTo 0)
+    for (i in (points.size - 1) downTo 0)
+        for (j in (i - 1) downTo 0)
             if (maxi <= points[i].distance(points[j])) {
                 maxi = points[i].distance(points[j])
                 out = listOf(i, j)
@@ -182,7 +182,7 @@ class Line private constructor(val b: Double, val angle: Double) {
 //Угол наклона обязан находиться в диапазоне от 0 (включительно) до PI (исключительно).
 private fun calAngle(begin: Point, end: Point): Double = when {
     begin.x - end.x == 0.0 -> PI / 2
-    atan((begin.y - end.y) / (begin.x - end.x)) >= 0 -> atan((begin.y - end.y) / (begin.x - end.x))
+    atan((begin.y - end.y) / (begin.x - end.x)) >= 0.0 -> atan((begin.y - end.y) / (begin.x - end.x))
     else -> atan((begin.y - end.y) / (begin.x - end.x)) + PI
 }
 
