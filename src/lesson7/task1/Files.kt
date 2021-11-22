@@ -525,32 +525,43 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-    val tags = listOf("<html>", "<body>", "<p>")
+    var boundaryTags = mutableListOf("<html>", "<body>", "<p>")
+    val numberedListTag = "<ol>"
+    val notNumberedListTag = "<ul>"
+    val tableItemTag = "<li>"
     val stack = ArrayDeque<Pair<String, Int>>()                // тег, его глубина
     val writer = File(outputName).bufferedWriter()
     val allLines = File(inputName).readLines()
+    val tablePointRegex = Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])""")
 
 
+    fun writeBoundaryTags() {
+        for (tag in boundaryTags) {
+            writer.write(tag)
+            writer.newLine()
+        }
+    }
 
-    for (tag in tags) {
+    writeBoundaryTags()
+
+    fun writeTypeListTag(tag: String, depth: Int) {
         writer.write(tag)
-        writer.newLine()
+        stack.push(Pair(tag.replace("<", "</"), depth))
     }
 
-    if (allLines[0].first() == '*') {
-        writer.write("<ul>")
-        stack.push(Pair("</ul>", -1))
-    } else {
-        writer.write("<ol>")
-        stack.push(Pair("</ol>", -1))
-    }
+
+    if (allLines[0].isNotBlank() && allLines[0].first() == '*')
+        writeTypeListTag(notNumberedListTag, -1)
+    else
+        writeTypeListTag(numberedListTag, -1)
+
     writer.newLine()
 
     for ((index, line) in allLines.withIndex()) {
 
-        if (line == allLines.last()) {
+        if (index == allLines.size - 1) {
 
-            writer.write("<li>${line.replace(Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])"""), "")}</li>")
+            writer.write("$tableItemTag${line.replace(tablePointRegex, "")}${tableItemTag.replace("<","</")}")
             writer.newLine()
             while (stack.isNotEmpty()) {
                 writer.write(stack.pop().first)
@@ -565,23 +576,22 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
         val curDepth = countDepth(line)
         val nextDepth = countDepth(allLines[index + 1])
 
-        writer.write("<li>${line.replace(Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])"""), "")}")
+
+
+        writer.write("$tableItemTag${line.replace(tablePointRegex, "")}")
 
 
         if (nextDepth > curDepth) {
-            stack.push(Pair("</li>", curDepth))
+            stack.push(Pair(tableItemTag.replace("<", "</"), curDepth))
             writer.newLine()
 
-            if (allLines[index + 1].contains(Regex("""([\d]+. )"""))) {
-                writer.write("<ol>")
-                stack.push(Pair("</ol>", curDepth))
-            } else {
-                writer.write("<ul>")
-                stack.push(Pair("</ul>", curDepth))
-            }
+            if (allLines[index + 1].contains(Regex("""([\d]+. )""")))
+                writeTypeListTag(numberedListTag, curDepth)
+            else
+                writeTypeListTag(notNumberedListTag, curDepth)
             writer.newLine()
         } else {
-            writer.write("</li>")
+            writer.write(tableItemTag.replace("<", "</"))
             writer.newLine()
             if (nextDepth < curDepth) {
                 while (stack.isNotEmpty() && stack.peek().second >= nextDepth) {
@@ -593,10 +603,9 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
 
     }
 
-    for (tag in tags.reversed()) {
-        writer.write(tag.replace("<", "</"))
-        writer.newLine()
-    }
+    boundaryTags.replaceAll { elem -> elem.replace("<", "</") }
+    boundaryTags = boundaryTags.reversed().toMutableList()
+    writeBoundaryTags()
 
 
     writer.close()
