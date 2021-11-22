@@ -561,7 +561,11 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
 
         if (index == allLines.size - 1) {
 
-            writer.write("$tableItemTag${line.replace(tablePointRegex, "")}${tableItemTag.replace("<","</")}")
+            writer.write(
+                "$tableItemTag${
+                    line.replace(tablePointRegex, "")
+                }${tableItemTag.replace("<", "</")}"
+            )
             writer.newLine()
             while (stack.isNotEmpty()) {
                 writer.write(stack.pop().first)
