@@ -182,7 +182,7 @@ class Line private constructor(val b: Double, val angle: Double) {
 //Угол наклона обязан находиться в диапазоне от 0 (включительно) до PI (исключительно).
 private fun calAngle(begin: Point, end: Point): Double = when {
     begin.x - end.x == 0.0 -> PI / 2
-    atan((begin.y - end.y) / (begin.x - end.x)) >= 0.0 -> atan((begin.y - end.y) / (begin.x - end.x))
+    atan((begin.y - end.y) / (begin.x - end.x)) + PI < PI -> atan((begin.y - end.y) / (begin.x - end.x))
     else -> atan((begin.y - end.y) / (begin.x - end.x)) + PI
 }
 
