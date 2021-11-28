@@ -219,6 +219,8 @@ fun plusMinus(expression: String): Int {
     return res
 }
 
+
+
 /**
  * Сложная (6 баллов)
  *
@@ -241,6 +243,8 @@ fun firstDuplicateIndex(str: String): Int {
     }
     return -1
 }
+
+
 
 /**
  * Сложная (6 баллов)
@@ -269,6 +273,8 @@ fun mostExpensive(description: String): String {
 
     return max.first
 }
+
+
 
 /**
  * Сложная (6 баллов)
@@ -308,6 +314,8 @@ fun fromRoman(roman: String): Int {
     }
     return if (roman(res) == roman) res else -1
 }
+
+
 
 /**
  * Очень сложная (7 баллов)
