@@ -743,6 +743,8 @@ fun markdownToHtml(inputName: String, outputName: String) {
     writer.close()
 }
 
+
+
 /**
  * Средняя (12 баллов)
  *

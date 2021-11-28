@@ -210,6 +210,7 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
 private operator fun Pair<Double, Int>.plus(pair: Pair<Double, Int>): Pair<Double, Int> =
     Pair(this.first + pair.first, this.second + pair.second)
 
+
 /**
  * Средняя (4 балла)
  *

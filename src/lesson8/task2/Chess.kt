@@ -73,6 +73,9 @@ fun square(notation: String): Square {
 
 }
 
+
+
+
 /**
  * Простая (2 балла)
  *

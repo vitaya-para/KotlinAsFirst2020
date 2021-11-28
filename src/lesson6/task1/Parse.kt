@@ -257,6 +257,8 @@ fun firstDuplicateIndex(str: String): Int {
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше нуля либо равны нулю.
  */
+
+
 fun mostExpensive(description: String): String {
     val pairs = Regex("""[^ ]+ ([0-9]+(([.]|[,])[0-9]+)?)(([;][ ]|$))""").findAll(description)
 

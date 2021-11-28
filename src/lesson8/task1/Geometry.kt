@@ -174,6 +174,8 @@ class Line private constructor(val b: Double, val angle: Double) {
     override fun toString() = "Line(${cos(angle)} * y = ${sin(angle)} * x + $b)"
 }
 
+
+
 /**
  * Средняя (3 балла)
  *
