@@ -525,6 +525,7 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlLists(inputName: String, outputName: String) {
+
     var boundaryTags = mutableListOf("<html>", "<body>", "<p>")
     val numberedListTag = "<ol>"
     val notNumberedListTag = "<ul>"
@@ -626,9 +627,419 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
  *
  */
 fun markdownToHtml(inputName: String, outputName: String) {
-    TODO()
+    // <editor-fold desc = "Переменные">
+    val stackOfTextTags = ArrayDeque<String>()
+    var needEnd = true
+    var boundaryTags = mutableListOf("<html>", "<body>", "<p>")
+    val numberedListTag = "<ol>"
+    val notNumberedListTag = "<ul>"
+    val tableItemTag = "<li>"
+    val stackOfListTags = ArrayDeque<Pair<String, Int>>()                // тег, его глубина
+    val writer = File(outputName).bufferedWriter()
+    val allLines = File(inputName).readLines()
+    val tablePointRegex = Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])""")
+    // </editor-fold>
+
+    // <editor-fold desc = "Начальные теги">
+    fun writeBoundaryTags() {
+        for (tag in boundaryTags) {
+            writer.write(tag)
+            writer.newLine()
+        }
+    }
+
+    writeBoundaryTags()
+    // </editor-fold>
+
+    fun writeTypeListTag(tag: String, depth: Int) {
+        writer.write(tag)
+        writer.newLine()
+        stackOfListTags.push(Pair(tag.replace("<", "</"), depth))
+    }
+
+
+/*    if (allLines[0].isNotBlank() && allLines[0].first() == '*') {
+//        writeTypeListTag(notNumberedListTag, -1)
+//    } else if (allLines[0].isNotBlank() && allLines[0].first() in '1'..'9') {
+//        writeTypeListTag(numberedListTag, -1)
+//    }*/
+
+
+    for ((index, line) in allLines.withIndex()) {
+
+        if (line.isBlank())
+            continue
+
+
+        if (index != 0 && allLines[index - 1].isBlank() && !needEnd) {
+            writer.write("<p>")
+            writer.newLine()
+            needEnd = true
+        }
+
+        val oldLine = StringBuilder()
+
+        fun countDepth(line: String) =
+            ((Regex("""[\s]+[\S]?""").find(line).map { it.groupValues[0] }?.length ?: 0) - 1) / 4
+
+        val curDepth = countDepth(line)
+        val nextDepth = countDepth(allLines[if (index < allLines.size - 1) index + 1 else index])
+
+
+        if (line.contains(tablePointRegex))
+            oldLine.append(line.replace(tablePointRegex, tableItemTag))
+        else
+            oldLine.append(line)
+
+
+        if (nextDepth <= curDepth) {
+
+            if (line.contains(tablePointRegex))
+                oldLine.append(tableItemTag.replace("<", "</"))
+        }
+
+        if (nextDepth == curDepth) {
+
+            if (allLines[index].contains(Regex("""([\d]+. )""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )                                                    // в обоих - Было next
+                writeTypeListTag(numberedListTag, curDepth)
+            else if (allLines[index].contains(Regex("""([\s]*[\*][ ])""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )
+                writeTypeListTag(notNumberedListTag, curDepth)
+        }
+
+
+        // <editor-fold desc = "Обрабокта тегов строки">
+        val symbols = oldLine.toString().toCharArray()
+        val newLine = StringBuilder("")
+        var i = 0
+
+        fun addToNewLine(tag: String) {
+
+            if (stackOfTextTags.isNotEmpty() && stackOfTextTags.peek() == tag) {
+                newLine.append(stackOfTextTags.pop().replace("<", "</"))
+            } else {
+                stackOfTextTags.push(tag)
+                newLine.append(tag)
+            }
+        }
+
+        while (i < symbols.size) {
+
+            when (symbols[i]) {
+                '*' -> {
+                    if (i + 1 < symbols.size && symbols[i + 1] == '*') {
+                        addToNewLine("<b>")
+                        i++
+                    } else
+                        addToNewLine("<i>")
+                    i++
+                }
+
+                '~' -> {
+                    if (i + 1 < symbols.size && symbols[i + 1] == '~') {
+                        addToNewLine("<s>")
+                        i += 2
+                    }
+                }
+
+                else -> {
+                    newLine.append(symbols[i])
+                    i++
+                }
+            }
+        }
+
+        writer.write(newLine.toString())
+        writer.newLine()
+        // </editor-fold>
+
+
+        if (nextDepth > curDepth) {
+
+            stackOfListTags.push(Pair(tableItemTag.replace("<", "</"), nextDepth))
+
+// delete this!
+            if (line.contains("Kchau"))
+                print(stackOfListTags)
+
+            if (allLines[index].contains(Regex("""([\d]+. )""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )                                                    // в обоих - Было next
+                writeTypeListTag(numberedListTag, curDepth)
+            else if (allLines[index].contains(Regex("""([\s]*[\*][ ])""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )
+                writeTypeListTag(notNumberedListTag, curDepth)
+// delete this!
+
+            if (index < allLines.size - 1) {
+                if (allLines[index + 1].contains(Regex("""([\d]+. )""")))
+                    writeTypeListTag(numberedListTag, nextDepth)
+                else if (allLines[index + 1].contains(Regex("""([\s]*[\*][ ])""")))
+                    writeTypeListTag(notNumberedListTag, nextDepth)
+            }
+
+        }
+
+        if (nextDepth < curDepth) {
+            while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) /*nextDepth*/ {
+                writer.write(stackOfListTags.pop().first)
+                writer.newLine()
+            }
+        }
+
+
+        if (index != allLines.size - 1) {
+            if (allLines[index + 1].isBlank() || !line.contains(tablePointRegex)) {
+                while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) {
+                    writer.write(stackOfListTags.pop().first)
+                    writer.newLine()
+                }
+            }
+            if (allLines[index + 1].isBlank() && needEnd) {
+                writer.write("</p>")
+                writer.newLine()
+                needEnd = false
+            }
+        }
+    }
+
+
+    // <editor-fold desc = "Конечные теги">
+    if (needEnd) {
+        writer.write("</p>")
+        writer.newLine()
+    }
+
+    boundaryTags.replaceAll { elem -> elem.replace("<", "</") }
+    boundaryTags = boundaryTags.reversed().toMutableList().subList(1, 3)
+    writeBoundaryTags()
+    // </editor-fold>
+
+    writer.close()
+
+
 }
 
+
+/*
+ *
+ * import ru.spbstu.wheels.NullableMonad.map
+import java.io.File
+import java.util.ArrayDeque
+import kotlin.text.StringBuilder
+
+fun main() {
+
+    markdownToHtml("input/IN.txt", "input/result.txt")
+
+}
+
+fun markdownToHtml(inputName: String, outputName: String) {
+
+
+    // <editor-fold desc = "Переменные">
+    val stackOfTextTags = ArrayDeque<String>()
+    var needEnd = true
+    var boundaryTags = mutableListOf("<html>", "<body>", "<p>")
+    val numberedListTag = "<ol>"
+    val notNumberedListTag = "<ul>"
+    val tableItemTag = "<li>"
+    val stackOfListTags = ArrayDeque<Pair<String, Int>>()                // тег, его глубина
+    val writer = File(outputName).bufferedWriter()
+    val allLines = File(inputName).readLines()
+    val tablePointRegex = Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])""")
+    // </editor-fold>
+
+    // <editor-fold desc = "Начальные теги">
+    fun writeBoundaryTags() {
+        for (tag in boundaryTags) {
+            writer.write(tag)
+            writer.newLine()
+        }
+    }
+
+    writeBoundaryTags()
+    // </editor-fold>
+
+    fun writeTypeListTag(tag: String, depth: Int) {
+        writer.write(tag)
+        writer.newLine()
+        stackOfListTags.push(Pair(tag.replace("<", "</"), depth))
+    }
+
+
+/*    if (allLines[0].isNotBlank() && allLines[0].first() == '*') {
+//        writeTypeListTag(notNumberedListTag, -1)
+//    } else if (allLines[0].isNotBlank() && allLines[0].first() in '1'..'9') {
+//        writeTypeListTag(numberedListTag, -1)
+//    }*/
+
+
+    for ((index, line) in allLines.withIndex()) {
+
+        if (line.isBlank())
+            continue
+
+
+        if (index != 0 && allLines[index - 1].isBlank() && !needEnd) {
+            writer.write("<p>")
+            writer.newLine()
+            needEnd = true
+        }
+
+        val oldLine = StringBuilder()
+
+        fun countDepth(line: String) =
+            ((Regex("""[\s]+[\S]?""").find(line).map { it.groupValues[0] }?.length ?: 0) - 1) / 4
+
+        val curDepth = countDepth(line)
+        val nextDepth = countDepth(allLines[if (index < allLines.size - 1) index + 1 else index])
+
+
+        if (line.contains(tablePointRegex))
+            oldLine.append(line.replace(tablePointRegex, tableItemTag))
+        else
+            oldLine.append(line)
+
+
+        if (nextDepth <= curDepth) {
+
+            if (line.contains(tablePointRegex))
+                oldLine.append(tableItemTag.replace("<", "</"))
+        }
+
+        if (nextDepth == curDepth) {
+
+            if (allLines[index].contains(Regex("""([\d]+. )""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )                                                    // в обоих - Было next
+                writeTypeListTag(numberedListTag, curDepth)
+            else if (allLines[index].contains(Regex("""([\s]*[\*][ ])""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )
+                writeTypeListTag(notNumberedListTag, curDepth)
+        }
+
+
+        // <editor-fold desc = "Обрабокта тегов строки">
+        val symbols = oldLine.toString().toCharArray()
+        val newLine = StringBuilder("")
+        var i = 0
+
+        fun addToNewLine(tag: String) {
+
+            if (stackOfTextTags.isNotEmpty() && stackOfTextTags.peek() == tag) {
+                newLine.append(stackOfTextTags.pop().replace("<", "</"))
+            } else {
+                stackOfTextTags.push(tag)
+                newLine.append(tag)
+            }
+        }
+
+        while (i < symbols.size) {
+
+            when (symbols[i]) {
+                '*' -> {
+                    if (i + 1 < symbols.size && symbols[i + 1] == '*') {
+                        addToNewLine("<b>")
+                        i++
+                    } else
+                        addToNewLine("<i>")
+                    i++
+                }
+
+                '~' -> {
+                    if (i + 1 < symbols.size && symbols[i + 1] == '~') {
+                        addToNewLine("<s>")
+                        i += 2
+                    }
+                }
+
+                else -> {
+                    newLine.append(symbols[i])
+                    i++
+                }
+            }
+        }
+
+        writer.write(newLine.toString())
+        writer.newLine()
+        // </editor-fold>
+
+
+        if (nextDepth > curDepth) {
+
+            stackOfListTags.push(Pair(tableItemTag.replace("<", "</"), nextDepth))
+
+// delete this!
+            if (line.contains("Kchau"))
+                print(stackOfListTags)
+
+            if (allLines[index].contains(Regex("""([\d]+. )""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )                                                    // в обоих - Было next
+                writeTypeListTag(numberedListTag, curDepth)
+            else if (allLines[index].contains(Regex("""([\s]*[\*][ ])""")) && (stackOfListTags.isNotEmpty()
+                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
+            )
+                writeTypeListTag(notNumberedListTag, curDepth)
+// delete this!
+
+            if (index < allLines.size - 1) {
+                if (allLines[index + 1].contains(Regex("""([\d]+. )""")))
+                    writeTypeListTag(numberedListTag, nextDepth)
+                else if (allLines[index + 1].contains(Regex("""([\s]*[\*][ ])""")))
+                    writeTypeListTag(notNumberedListTag, nextDepth)
+            }
+
+        }
+
+        if (nextDepth < curDepth) {
+            while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) /*nextDepth*/ {
+                writer.write(stackOfListTags.pop().first)
+                writer.newLine()
+            }
+        }
+
+
+        if (index != allLines.size - 1) {
+            if (allLines[index + 1].isBlank() || !line.contains(tablePointRegex)) {
+                while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) {
+                    writer.write(stackOfListTags.pop().first)
+                    writer.newLine()
+                }
+            }
+            if (allLines[index + 1].isBlank() && needEnd) {
+                writer.write("</p>")
+                writer.newLine()
+                needEnd = false
+            }
+        }
+    }
+
+
+    // <editor-fold desc = "Конечные теги">
+    if (needEnd) {
+        writer.write("</p>")
+        writer.newLine()
+    }
+
+    boundaryTags.replaceAll { elem -> elem.replace("<", "</") }
+    boundaryTags = boundaryTags.reversed().toMutableList().subList(1, 3)
+    writeBoundaryTags()
+    // </editor-fold>
+
+    writer.close()
+}
+ *
+ *
+ *
+ *
+ * */
 /**
  * Средняя (12 баллов)
  *
