@@ -525,7 +525,6 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlLists(inputName: String, outputName: String) {
-
     var boundaryTags = mutableListOf("<html>", "<body>", "<p>")
     val numberedListTag = "<ol>"
     val notNumberedListTag = "<ul>"
@@ -627,6 +626,7 @@ fun markdownToHtmlLists(inputName: String, outputName: String) {
  *
  */
 fun markdownToHtml(inputName: String, outputName: String) {
+
     // <editor-fold desc = "Переменные">
     val stackOfTextTags = ArrayDeque<String>()
     var needEnd = true
@@ -637,7 +637,7 @@ fun markdownToHtml(inputName: String, outputName: String) {
     val stackOfListTags = ArrayDeque<Pair<String, Int>>()                // тег, его глубина
     val writer = File(outputName).bufferedWriter()
     val allLines = File(inputName).readLines()
-    val tablePointRegex = Regex("""[\s]*([\d]+. )|([\s]*[\*][ ])""")
+    val tablePointRegex = Regex("""[\s]*([\d]+. )""")
     // </editor-fold>
 
     // <editor-fold desc = "Начальные теги">
@@ -656,13 +656,6 @@ fun markdownToHtml(inputName: String, outputName: String) {
         writer.newLine()
         stackOfListTags.push(Pair(tag.replace("<", "</"), depth))
     }
-
-
-/*    if (allLines[0].isNotBlank() && allLines[0].first() == '*') {
-//        writeTypeListTag(notNumberedListTag, -1)
-//    } else if (allLines[0].isNotBlank() && allLines[0].first() in '1'..'9') {
-//        writeTypeListTag(numberedListTag, -1)
-//    }*/
 
 
     for ((index, line) in allLines.withIndex()) {
@@ -688,26 +681,36 @@ fun markdownToHtml(inputName: String, outputName: String) {
 
         if (line.contains(tablePointRegex))
             oldLine.append(line.replace(tablePointRegex, tableItemTag))
+        else if (line.trim().startsWith("* "))
+            oldLine.append(line.replaceFirst("* ", tableItemTag))
         else
             oldLine.append(line)
 
 
+        // println("$line   ${line.trim().startsWith("* ")}   $stackOfListTags")
+
+        if (line.contains(tablePointRegex) && (stackOfListTags.isNotEmpty()
+                    && stackOfListTags.peek() != Pair(
+                numberedListTag.replace("<", "</"),
+                curDepth
+            ) || stackOfListTags.isEmpty())
+        )
+            writeTypeListTag(numberedListTag, curDepth)
+
+        else if (line.trim().startsWith("* ") && (stackOfListTags.isNotEmpty()
+                    && stackOfListTags.peek() != Pair(
+                notNumberedListTag.replace("<", "</"),
+                curDepth
+            ) || stackOfListTags.isEmpty())
+        )
+            writeTypeListTag(notNumberedListTag, curDepth)
+
+
+
+
         if (nextDepth <= curDepth) {
-
-            if (line.contains(tablePointRegex))
+            if (line.contains(tablePointRegex) || line.trim().startsWith("* "))
                 oldLine.append(tableItemTag.replace("<", "</"))
-        }
-
-        if (nextDepth == curDepth) {
-
-            if (allLines[index].contains(Regex("""([\d]+. )""")) && (stackOfListTags.isNotEmpty()
-                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
-            )                                                    // в обоих - Было next
-                writeTypeListTag(numberedListTag, curDepth)
-            else if (allLines[index].contains(Regex("""([\s]*[\*][ ])""")) && (stackOfListTags.isNotEmpty()
-                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
-            )
-                writeTypeListTag(notNumberedListTag, curDepth)
         }
 
 
@@ -757,32 +760,8 @@ fun markdownToHtml(inputName: String, outputName: String) {
         // </editor-fold>
 
 
-        if (nextDepth > curDepth) {
-
+        if (nextDepth > curDepth)
             stackOfListTags.push(Pair(tableItemTag.replace("<", "</"), nextDepth))
-
-// delete this!
-            if (line.contains("Kchau"))
-                print(stackOfListTags)
-
-            if (allLines[index].contains(Regex("""([\d]+. )""")) && (stackOfListTags.isNotEmpty()
-                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
-            )                                                    // в обоих - Было next
-                writeTypeListTag(numberedListTag, curDepth)
-            else if (allLines[index].contains(Regex("""([\s]*[\*][ ])""")) && (stackOfListTags.isNotEmpty()
-                        && stackOfListTags.peek().second != curDepth || stackOfListTags.isEmpty())
-            )
-                writeTypeListTag(notNumberedListTag, curDepth)
-// delete this!
-
-            if (index < allLines.size - 1) {
-                if (allLines[index + 1].contains(Regex("""([\d]+. )""")))
-                    writeTypeListTag(numberedListTag, nextDepth)
-                else if (allLines[index + 1].contains(Regex("""([\s]*[\*][ ])""")))
-                    writeTypeListTag(notNumberedListTag, nextDepth)
-            }
-
-        }
 
         if (nextDepth < curDepth) {
             while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) /*nextDepth*/ {
@@ -793,18 +772,23 @@ fun markdownToHtml(inputName: String, outputName: String) {
 
 
         if (index != allLines.size - 1) {
-            if (allLines[index + 1].isBlank() || !line.contains(tablePointRegex)) {
-                while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) {
-                    writer.write(stackOfListTags.pop().first)
-                    writer.newLine()
-                }
-            }
+//            if (allLines[index + 1].isBlank() || !(line.contains(tablePointRegex) || line.trim().startsWith("* "))) {
+//                while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) {
+//                    writer.write(stackOfListTags.pop().first)
+//                    writer.newLine()
+//                }
+//            }
+
             if (allLines[index + 1].isBlank() && needEnd) {
                 writer.write("</p>")
                 writer.newLine()
                 needEnd = false
             }
         }
+    }
+    while (stackOfListTags.isNotEmpty()) {
+        writer.write(stackOfListTags.pop().first)
+        writer.newLine()
     }
 
 
@@ -820,7 +804,6 @@ fun markdownToHtml(inputName: String, outputName: String) {
     // </editor-fold>
 
     writer.close()
-
 
 }
 
