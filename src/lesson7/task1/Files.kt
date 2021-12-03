@@ -261,7 +261,7 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
 
 
     for (line in File(inputName).readLines()) {
-        val letters = line.lowercase().toCharArray().toSet()
+        val letters = line.lowercase().toSet()
 
         if (letters.size == line.length) {
             words[line] = letters.size
@@ -686,9 +686,6 @@ fun markdownToHtml(inputName: String, outputName: String) {
         else
             oldLine.append(line)
 
-
-        // println("$line   ${line.trim().startsWith("* ")}   $stackOfListTags")
-
         if (line.contains(tablePointRegex) && (stackOfListTags.isNotEmpty()
                     && stackOfListTags.peek() != Pair(
                 numberedListTag.replace("<", "</"),
@@ -772,13 +769,6 @@ fun markdownToHtml(inputName: String, outputName: String) {
 
 
         if (index != allLines.size - 1) {
-//            if (allLines[index + 1].isBlank() || !(line.contains(tablePointRegex) || line.trim().startsWith("* "))) {
-//                while (stackOfListTags.isNotEmpty() && stackOfListTags.peek().second >= curDepth) {
-//                    writer.write(stackOfListTags.pop().first)
-//                    writer.newLine()
-//                }
-//            }
-
             if (allLines[index + 1].isBlank() && needEnd) {
                 writer.write("</p>")
                 writer.newLine()
