@@ -246,18 +246,37 @@ fun hasDifferentDigits(n: Int): Boolean {
  * Средняя (4 балла)
  *
  * Для заданного x рассчитать с заданной точностью eps
+ *  * cos(x) = 1 - x^2 / 2! + x^4 / 4! - x^6 / 6! + ...
  * sin(x) = x - x^3 / 3! + x^5 / 5! - x^7 / 7! + ...
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю.
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.sin и другие стандартные реализации функции синуса в этой задаче запрещается.
  */
 private fun normalisation(x: Double): Double = x - (x / (2 * PI)).toInt() * (2 * PI)
+
+
+private fun nonUsualFunc(x: Double, eps: Double, shift: Int): Double {
+    var res = 0.0
+    var memberOfNumber: Double
+    var i = 0
+    do {
+        memberOfNumber = x.pow(i * 2 + shift) / factorial(i * 2 + shift)
+        res += when (i % 2) {
+            0 -> memberOfNumber
+            else -> -memberOfNumber
+        }
+        i++
+    } while (abs(memberOfNumber) >= eps)
+    return if (res > 0.0) min(res, 1.0) else max(res, -1.0)
+}
+
 fun sin(x: Double, eps: Double): Double {
     val cp = normalisation(x)
-    return when {
-        (cp >= 0 && cp < PI) || (cp > -2 * PI && cp < -PI) ->
-            sqrt(1 - cos(cp, eps).pow(2))
-        else -> -sqrt(1 - cos(cp, eps).pow(2))
+    return when (cp) {
+        0.0, PI -> 0.0
+        PI / 2.0 -> 1.0
+        3.0 * PI / 2.0 -> -1.0
+        else -> nonUsualFunc(cp, eps, 1)
     }
 }
 
@@ -270,28 +289,13 @@ fun sin(x: Double, eps: Double): Double {
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.cos и другие стандартные реализации функции косинуса в этой задаче запрещается.
  */
-fun nonUsualCos(x: Double, eps: Double): Double {
-    var res = 0.0
-    var memberOfNumber: Double
-    var i = 0
-    do {
-        memberOfNumber = x.pow(i * 2) / factorial(i * 2)
-        res += when (i % 2) {
-            0 -> memberOfNumber
-            else -> -memberOfNumber
-        }
-        i++
-    } while (memberOfNumber > eps)
-    return if (res > 0.0) min(res, 1.0) else max(res, -1.0)
-}
-
 fun cos(x: Double, eps: Double): Double {
     val cp = normalisation(x)
     return when (cp) {
         0.0 -> 1.0
         PI / 2.0, 3.0 * PI / 2.0 -> 0.0
         PI -> -1.0
-        else -> nonUsualCos(cp, eps)
+        else -> nonUsualFunc(cp, eps, 0)
     }
 }
 

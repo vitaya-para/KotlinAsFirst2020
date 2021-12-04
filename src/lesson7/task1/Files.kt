@@ -367,15 +367,10 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
-class MyArrayDeque(__writer: BufferedWriter) {
-    private val writer: BufferedWriter
+class MyArrayDeque(val writer: BufferedWriter) {
     private val stack = ArrayDeque<String>()
     private val needNextLine = listOf<String>("html", "body", "p", "ol", "ul")
     private var depth = -1
-
-    init {
-        writer = __writer
-    }
 
     fun getDepth(): Int = depth
 
@@ -744,7 +739,6 @@ fun markdownToHtml(inputName: String, outputName: String) {
 }
 
 
-
 /**
  * Средняя (12 баллов)
  *
@@ -831,11 +825,17 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
                     "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
         )// -2 из-за строки "-0"
     } else {
-        space++
+        var prespace = ""
+        if (minuend.length() < (subtrahend.length() + 1)) {
+            prespace = " "
+            space++
+        }
+        //val prespace = if (lhv.length() == (subtrahend + 1)) " " else ""
+
         writer.appendLine(
-            " $lhv | $rhv\n-${subtrahend}${getSpace(lhvLight + 3 - subtrahend.length())}${lhv / rhv}\n" +
+            "$prespace$lhv | $rhv\n-${subtrahend}${getSpace(lhvLight + 2 + prespace.length - subtrahend.length())}${lhv / rhv}\n" +
                     "".padEnd(max(minuend.length(), subtrahend.length() + 1), '-')
-        ) // длина числа и 3 символа " | "
+        )
     }
     for (i in lhv.toString().substring(minuend.length(), lhvLight)) {
         space++

@@ -136,9 +136,14 @@ fun dateDigitToStr(digital: String): String = TODO()
 fun flattenPhoneNumber(phone: String): String {
     //проверка на наличие () и символов отличных от 0-9, ' ', + и минуса
     if (Regex("""\(\)|[^0-9- ()+]""").containsMatchIn(phone)) return ""
-    var str = ""
-    Regex("""[+]?[0-9]+""").findAll(phone).forEach { str += it.value }
-    return str
+    val line = phone.replace("-", "").replace(" ", "")
+    val str = Regex("""^[+0-9]?[0-9]*(\([0-9]+\))?[0-9]*""").find(line)?.value?.replace("(", "")?.replace(")", "") ?: ""
+    if (line.replace("(", "").replace(")", "") == str && (str.length > 1 ||
+                (str[0] in '0'..'9'))
+    )
+        return str
+    else
+        return ""
 }
 
 /**
@@ -203,8 +208,8 @@ fun plusMinus(expression: String): Int {
 
         if (isNum)
             when (plus) {
-                true -> res += tmp.toIntOrNull()!!
-                else -> res -= tmp.toIntOrNull()!!
+                true -> res += tmp.toIntOrNull() ?: throw IllegalArgumentException("Error")
+                else -> res -= tmp.toIntOrNull() ?: throw IllegalArgumentException("Error")
             }
         else
             when (tmp) {
@@ -218,7 +223,6 @@ fun plusMinus(expression: String): Int {
         throw IllegalArgumentException("Error")
     return res
 }
-
 
 
 /**
@@ -243,7 +247,6 @@ fun firstDuplicateIndex(str: String): Int {
     }
     return -1
 }
-
 
 
 /**
@@ -275,7 +278,6 @@ fun mostExpensive(description: String): String {
 
     return max.first
 }
-
 
 
 /**
@@ -316,7 +318,6 @@ fun fromRoman(roman: String): Int {
     }
     return if (roman(res) == roman) res else -1
 }
-
 
 
 /**

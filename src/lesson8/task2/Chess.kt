@@ -3,9 +3,6 @@
 package lesson8.task2
 
 import lesson1.task1.sqr
-import ru.spbstu.wheels.Inf
-import ru.spbstu.wheels.NullableMonad.map
-import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
@@ -38,15 +35,9 @@ data class Square(val column: Int, val row: Int) {
         else
             Double.MAX_VALUE
 
-    //fun getNewPos(m_column: Int, m_row: Int): Square = Square(this.column + m_column, this.row + m_row)
-
-    fun elemAndPosition(m_column: Int, m_row: Int, end: Square): Pair<Square, Double> {
-        try {
-            val out = this + Pair(m_column, m_row)
-            return Pair(Square(m_column, m_row), dist(out, end))
-        } catch (e: Exception) {
-            return Pair(Square(1, 1), Double.MAX_VALUE)
-        }
+    fun elemAndPosition(mColumn: Int, mRow: Int, end: Square): Pair<Square, Double> {
+        val out = this + Pair(mColumn, mRow)
+        return Pair(Square(mColumn, mRow), dist(out, end))
     }
 
     operator fun minus(start: Square): Square = Square(this.column - start.column, this.row - start.row)
@@ -62,18 +53,11 @@ data class Square(val column: Int, val row: Int) {
  * Если нотация некорректна, бросить IllegalArgumentException
  */
 fun square(notation: String): Square {
-    try {
-        val a = Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
-        if (!a.inside())
-            throw IllegalArgumentException("Error")
-        return a
-    } catch (e: Exception) {
+    val a = Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
+    if (!a.inside())
         throw IllegalArgumentException("Error")
-    }
-
+    return a
 }
-
-
 
 
 /**
