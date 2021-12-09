@@ -55,7 +55,7 @@ data class Square(val column: Int, val row: Int) {
 fun square(notation: String): Square {
     try {
         val a = Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
-        if (!a.inside())
+        if (!a.inside() || notation.length != 2)
             throw IllegalArgumentException("Error")
         return a
     } catch (e: StringIndexOutOfBoundsException) {
@@ -193,7 +193,7 @@ fun kingMoveNumber(start: Square, end: Square): Int = kingTrajectory(start, end)
  * Если возможно несколько вариантов самой быстрой траектории, вернуть любой из них.
  */
 fun kingTrajectory(start: Square, end: Square): List<Square> {
-    if(!start.inside())
+    if (!start.inside())
         throw IllegalArgumentException("Error")
     val way = mutableListOf<Square>(start)
     var move = listOf(
@@ -285,7 +285,8 @@ private fun possibleKnightMoves(a: Square): List<Square> {
 private fun restoreWay(end: Square): List<Square> = listOf(end)
 fun knightTrajectory(start: Square, end: Square): List<Square> {
     val processed = MutableList<Square?>(8 * 8) { null }
-    processed[start.toInt] = start
+    if (!start.inside() || !end.inside())
+        throw IllegalArgumentException("Error")
     var q = listOf(start)
     while (true) {
         val newQ = mutableListOf<Square>()
