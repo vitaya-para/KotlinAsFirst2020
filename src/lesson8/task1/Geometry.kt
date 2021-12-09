@@ -115,12 +115,14 @@ fun diameter(vararg points: Point): Segment {
     if (points.size < 2) throw IllegalArgumentException("Error")
     var maxi = Double.MIN_VALUE
     var out = listOf<Int>(-1, -1)
-    for (i in (points.size - 1) downTo 0)
+    for (i in (points.size - 1) downTo 0) {
         for (j in (i - 1) downTo 0)
             if (maxi <= points[i].distance(points[j])) {
                 maxi = points[i].distance(points[j])
                 out = listOf(i, j)
             }
+    }
+    if (out[0] == -1 || out[1] == -1) throw IllegalArgumentException("Error")
     return Segment(points[out[1]], points[out[0]])
 }
 
