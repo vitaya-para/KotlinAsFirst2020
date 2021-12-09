@@ -53,10 +53,16 @@ data class Square(val column: Int, val row: Int) {
  * Если нотация некорректна, бросить IllegalArgumentException
  */
 fun square(notation: String): Square {
-    val a = Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
-    if (!a.inside())
+    try {
+        val a = Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
+        if (!a.inside())
+            throw IllegalArgumentException("Error")
+        return a
+    } catch (e: StringIndexOutOfBoundsException) {
         throw IllegalArgumentException("Error")
-    return a
+    }
+
+
 }
 
 
@@ -187,6 +193,8 @@ fun kingMoveNumber(start: Square, end: Square): Int = kingTrajectory(start, end)
  * Если возможно несколько вариантов самой быстрой траектории, вернуть любой из них.
  */
 fun kingTrajectory(start: Square, end: Square): List<Square> {
+    if(!start.inside())
+        throw IllegalArgumentException("Error")
     val way = mutableListOf<Square>(start)
     var move = listOf(
         start.elemAndPosition(1, 1, end),

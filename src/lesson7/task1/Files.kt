@@ -413,73 +413,7 @@ class MyArrayDeque(val writer: BufferedWriter) {
 }
 
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
-    val stack = MyArrayDeque(writer)
-    stack.push("html")
-    stack.push("body")
-    stack.push("p")
-    var textStarted = true
-    for (line__ in File(inputName).readLines()) {
-        val linesArr = line__.split(("\\n").toString()).toTypedArray()
-        for (line in linesArr) {
-            if (line == "") {
-                if (!textStarted) {
-                    stack.pop()
-                    stack.push("p")
-                }
-                textStarted = true
-                continue
-            }
-            textStarted = false
-            val bufferSize = 2
-            val buffer = MutableList<Char>(bufferSize) { '' }//U+0000
-            var runner = 2
-            val keyChars = listOf<Char>('*', '~')
-            for (i in line) {
-                buffer[runner % bufferSize] = i
-                when {
-                    i == '\n' -> {
-
-                    }
-                    //s
-                    i == '~' && buffer[(runner - 1) % bufferSize] == '~' -> {
-                        stack.newTag("s")
-                        buffer[(runner - 1) % bufferSize] = ''//U+0000
-                        buffer[(runner) % bufferSize] = ''//U+0000
-                    }
-                    //b
-                    i == '*' && buffer[(runner - 1) % bufferSize] == '*' -> {
-                        stack.newTag("b")
-                        buffer[(runner - 1) % bufferSize] = ''//U+0000
-                        buffer[(runner) % bufferSize] = ''//U+0000
-                    }
-                    //i
-                    buffer[(runner - 1) % bufferSize] == '*' -> {
-                        stack.newTag("i")
-                        if (i != '~')
-                            writer.write(i.toString())
-                    }
-                    //single keyChar
-                    keyChars.contains(i) -> {
-                    }
-
-                    else -> {
-                        if (buffer[(runner - 1) % bufferSize] == '~')
-                            writer.write(buffer[(runner - 1) % bufferSize].toString())
-                        writer.write(i.toString())
-                    }
-                }
-                runner++
-            }
-            //проверка на остаток в буфере '*'
-            if (buffer[runner % bufferSize] == 'i')
-                stack.newTag("i")
-        }
-
-    }
-    while (!stack.isEmpty())
-        stack.pop()
-    writer.close()
+    TODO()
 }
 
 /**

@@ -135,11 +135,11 @@ fun dateDigitToStr(digital: String): String = TODO()
  */
 fun flattenPhoneNumber(phone: String): String {
     //проверка на наличие () и символов отличных от 0-9, ' ', + и минуса
-    if (Regex("""\(\)|[^0-9- ()+]""").containsMatchIn(phone)) return ""
     val line = phone.replace("-", "").replace(" ", "")
+    if (Regex("""\(\)|[^0-9()+]""").containsMatchIn(line)) return ""
     val str = Regex("""^[+0-9]?[0-9]*(\([0-9]+\))?[0-9]*""").find(line)?.value?.replace("(", "")?.replace(")", "") ?: ""
-    if (line.replace("(", "").replace(")", "") == str && (str.length > 1 ||
-                (str[0] in '0'..'9'))
+    if (line.replace("(", "").replace(")", "") == str &&
+        (str.length > 1 || (str.isNotEmpty() && (str[0] in '0'..'9')))
     )
         return str
     else
