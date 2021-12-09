@@ -103,7 +103,6 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
     return statistic
 }
 
-
 /**
  * Средняя (12 баллов)
  *

@@ -4,6 +4,7 @@ package lesson8.task2
 
 import lesson1.task1.sqr
 import kotlin.math.sqrt
+
 //
 //
 //
@@ -59,16 +60,9 @@ data class Square(val column: Int, val row: Int) {
  * Если нотация некорректна, бросить IllegalArgumentException
  */
 fun square(notation: String): Square {
-    try {
-        val a = Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
-        if (!a.inside() || notation.length != 2)
-            throw IllegalArgumentException("Error")
-        return a
-    } catch (e: StringIndexOutOfBoundsException) {
+    if (notation.length != 2 || !Square(notation[0] - 'a' + 1, notation[1].toString().toInt()).inside())
         throw IllegalArgumentException("Error")
-    }
-
-
+    return Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
 }
 
 
@@ -199,30 +193,46 @@ fun kingMoveNumber(start: Square, end: Square): Int = kingTrajectory(start, end)
  * Если возможно несколько вариантов самой быстрой траектории, вернуть любой из них.
  */
 fun kingTrajectory(start: Square, end: Square): List<Square> {
-    if (!start.inside())
+    if (!start.inside() || !end.inside())
         throw IllegalArgumentException("Error")
     val way = mutableListOf<Square>(start)
-    var move = listOf(
-        start.elemAndPosition(1, 1, end),
-        start.elemAndPosition(1, 0, end),
-        start.elemAndPosition(1, -1, end),
-        start.elemAndPosition(0, -1, end),
-        start.elemAndPosition(-1, -1, end),
-        start.elemAndPosition(-1, 0, end),
-        start.elemAndPosition(-1, 1, end),
-        start.elemAndPosition(0, 1, end)
-    ).sortedBy { it.second }[0].first
+    var move = when {
+        start.row == end.row -> when {
+            start.column > end.column -> Square(-1, 0)
+            start.column < end.column -> Square(1, 0)
+            else -> Square(0, 0)
+        }
+        start.row > end.row -> when { /*down*/
+            start.column > end.column -> Square(-1, -1)
+            start.column < end.column -> Square(1, -1)
+            else -> Square(0, -1)
+        }
+        else -> when { /*up*/
+            start.column > end.column -> Square(-1, 1)
+            start.column < end.column -> Square(1, 1)
+            else -> Square(0, 1)
+        }
+    }
     var step = start
     while (step.row != end.row && step.column != end.column) {
         step += move
         way.add(step)
     }
-    move = listOf(
-        step.elemAndPosition(1, 0, end),
-        step.elemAndPosition(0, -1, end),
-        step.elemAndPosition(-1, 0, end),
-        step.elemAndPosition(0, 1, end)
-    ).sortedBy { it.second }[0].first
+    move = when {
+        step.row == end.row -> when {
+            step.column > end.column -> Square(-1, 0)
+            step.column < end.column -> Square(1, 0)
+            else -> Square(0, 0)
+        }
+        step.row > end.row -> Square(0, -1)
+        else -> Square(0, 1)
+    }
+//    move = listOf(
+//        step.elemAndPosition(1, 0, end),
+//        step.elemAndPosition(0, -1, end),
+//        step.elemAndPosition(-1, 0, end),
+//        step.elemAndPosition(0, 1, end)
+//    ).sortedBy { it.second }[0].first
     while (step.row != end.row || step.column != end.column) {
         step += move
         way.add(step)

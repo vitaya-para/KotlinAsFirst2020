@@ -182,7 +182,7 @@ class Line private constructor(val b: Double, val angle: Double) {
  */
 //Угол наклона обязан находиться в диапазоне от 0 (включительно) до PI (исключительно).
 private fun calAngle(begin: Point, end: Point): Double = when {
-    begin.x - end.x == 0.0 -> PI / 2
+    abs(begin.x - end.x) <= 1e-4 -> PI / 2
     else -> (atan((begin.y - end.y) / (begin.x - end.x)) + 2 * PI) % PI
 }
 
@@ -228,12 +228,13 @@ fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
     if (circles.size < 2) throw IllegalArgumentException("Error")
     var maxi = Double.MAX_VALUE
     var out = listOf<Int>(-1, -1)
-    for (i in circles.size - 1 downTo 0)
+    for (i in circles.size - 1 downTo 0) {
         for (j in i - 1 downTo 0)
             if (maxi >= circles[i].distance(circles[j])) {
                 maxi = circles[i].distance(circles[j])
                 out = listOf(i, j)
             }
+    }
     return Pair(circles[out[1]], circles[out[0]])
 }
 
@@ -328,6 +329,5 @@ fun minContainingCircle(vararg points: Point): Circle = when (points.size) {
     0 -> throw IllegalArgumentException()
     1 -> Circle(points[0], 0.0)
     2 -> circleByDiameter(Segment(points[0], points[1]))
-    3 -> circleByThreePoints(points[0], points[1], points[2])
     else -> minCircle(points.toList())
 }
