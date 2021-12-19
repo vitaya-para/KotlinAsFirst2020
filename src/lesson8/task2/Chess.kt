@@ -36,17 +36,6 @@ data class Square(val column: Int, val row: Int) {
      */
     fun notation(): String = if (this.inside()) "${(column + 'a'.code - 1).toChar()}$row" else ""
 
-    private fun dist(start: Square, end: Square): Double =
-        if (start.inside())
-            sqrt(sqr((start.column - end.column)).toDouble() + sqr((start.row - end.row)))
-        else
-            Double.MAX_VALUE
-
-    fun elemAndPosition(mColumn: Int, mRow: Int, end: Square): Pair<Square, Double> {
-        val out = this + Pair(mColumn, mRow)
-        return Pair(Square(mColumn, mRow), dist(out, end))
-    }
-
     operator fun minus(start: Square): Square = Square(this.column - start.column, this.row - start.row)
     operator fun plus(move: Square): Square = Square(this.column + move.column, this.row + move.row)
     operator fun plus(move: Pair<Int, Int>): Square = this + Square(move.first, move.second)
@@ -227,12 +216,6 @@ fun kingTrajectory(start: Square, end: Square): List<Square> {
         step.row > end.row -> Square(0, -1)
         else -> Square(0, 1)
     }
-//    move = listOf(
-//        step.elemAndPosition(1, 0, end),
-//        step.elemAndPosition(0, -1, end),
-//        step.elemAndPosition(-1, 0, end),
-//        step.elemAndPosition(0, 1, end)
-//    ).sortedBy { it.second }[0].first
     while (step.row != end.row || step.column != end.column) {
         step += move
         way.add(step)
@@ -297,8 +280,6 @@ private fun possibleKnightMoves(a: Square): List<Square> {
     if ((a + Pair(1, -2)).inside()) out.add(a + Pair(1, -2))
     return out
 }
-
-private fun restoreWay(end: Square): List<Square> = listOf(end)
 fun knightTrajectory(start: Square, end: Square): List<Square> {
     val processed = MutableList<Square?>(8 * 8) { null }
     if (!start.inside() || !end.inside())

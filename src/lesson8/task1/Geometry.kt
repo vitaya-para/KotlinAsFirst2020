@@ -183,10 +183,7 @@ class Line private constructor(val b: Double, val angle: Double) {
  * Построить прямую по отрезку
  */
 //Угол наклона обязан находиться в диапазоне от 0 (включительно) до PI (исключительно).
-private fun calAngle(begin: Point, end: Point): Double = when {
-    abs(begin.x - end.x) <= 1e-4 -> PI / 2
-    else -> (atan((begin.y - end.y) / (begin.x - end.x)) + 2 * PI) % PI
-}
+private fun calAngle(begin: Point, end: Point): Double = (atan((begin.y - end.y) / (begin.x - end.x)) + 2 * PI) % PI
 
 fun lineBySegment(s: Segment): Line =
     Line(
@@ -277,6 +274,7 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
+// идея алгоритма: https://en.wikipedia.org/wiki/Smallest-circle_problem
 fun minCircle(points: List<Point>): Circle {
     var out = circleByThreePoints(points[0], points[1], points[2])
     for (i in 3 until points.size) {
