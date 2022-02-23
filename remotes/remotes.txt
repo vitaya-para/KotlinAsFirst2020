@@ -1,0 +1,6 @@
+KotlinAsFirst2020       https://github.com/vitaya-para/KotlinAsFirst2020.git (fetch)
+KotlinAsFirst2020       https://github.com/vitaya-para/KotlinAsFirst2020.git (push)
+KotlinAsFirst2021       https://github.com/vitaya-para/KotlinAsFirst2021.git (fetch)
+KotlinAsFirst2021       https://github.com/vitaya-para/KotlinAsFirst2021.git (push)
+KotlinAsFirstOther      https://github.com/Ilya-503/KotlinAsFirst2021.git (fetch)
+KotlinAsFirstOther      https://github.com/Ilya-503/KotlinAsFirst2021.git (push)
