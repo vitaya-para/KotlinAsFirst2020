@@ -155,6 +155,13 @@ class Tests {
         assertFalse(isCoPrime(37, 111))
         assertTrue(isCoPrime(1234567890, 908765431))
         assertTrue(isCoPrime(2109876543, 1234567891))
+        assertTrue(isCoPrime(1, 1))
+        assertTrue(isCoPrime(5, 1))
+        assertTrue(isCoPrime(1, 5))
+        assertTrue(isCoPrime(2, 7))
+        assertTrue(isCoPrime(11, 3))
+        assertFalse(isCoPrime(5, 25))
+        assertFalse(isCoPrime(25, 5))
     }
 
     @Test
@@ -201,6 +208,8 @@ class Tests {
         assertFalse(hasDifferentDigits(0))
         assertFalse(hasDifferentDigits(777))
         assertTrue(hasDifferentDigits(31122))
+        assertFalse(hasDifferentDigits(111))
+        assertTrue(hasDifferentDigits(114))
     }
 
     @Test

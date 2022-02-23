@@ -123,6 +123,8 @@ class Tests {
     fun containsIn() {
         assertTrue(containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")))
         assertFalse(containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")))
+        assertTrue(containsIn(mapOf(), mapOf("a" to "zee", "b" to "sweet")))
+        assertFalse(containsIn(mapOf("a" to "z"), mapOf()))
     }
 
     @Test
@@ -315,6 +317,14 @@ class Tests {
         assertEquals(
             Pair(-1, -1),
             findSumOfTwo(listOf(1, 2, 3), 6)
+        )
+        assertEquals(
+            Pair(2, 5),
+            findSumOfTwo(listOf(2, 1, 0, 1, 3, 0, 4, 0), 0)
+        )
+        assertEquals(
+            Pair(-1, -1),
+            findSumOfTwo(listOf(0), 0)
         )
     }
 

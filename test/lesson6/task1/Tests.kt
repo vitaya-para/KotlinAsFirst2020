@@ -99,6 +99,14 @@ class Tests {
         assertThrows(IllegalArgumentException::class.java) { plusMinus("4 - -2") }
         assertThrows(IllegalArgumentException::class.java) { plusMinus("44 - - 12") }
         assertThrows(IllegalArgumentException::class.java) { plusMinus("4 - + 12") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("+12") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("-12") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("4- +4 + /3") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("4 / 4") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("+0 - 43 3") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("4 - + 12") }
+        assertThrows(IllegalArgumentException::class.java) { plusMinus("4 - + 12") }
+
     }
 
     @Test

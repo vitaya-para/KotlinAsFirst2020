@@ -3,10 +3,9 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
-import lesson2.task2.avgOf
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.pow
+import kotlin.math.min
 import kotlin.math.sqrt
 
 // Урок 2: ветвления (здесь), логический тип (см. 2.2).
@@ -72,13 +71,11 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
 fun ageDescription(age: Int): String = when {
-    ((age % 100 > 10) && (age % 100 < 20)) -> "$age лет"
-    else -> when (age % 10) {
-        1 -> "$age год"
-        in 2..4 -> "$age года"
-        else -> "$age лет"
-    }
+    age in 5..20 || age in 105..120 || age % 10 in 5..9 || age % 10 == 0 -> "$age лет"
+    age % 10 in 2..4 -> "$age года"
+    else -> "$age год"
 }
+
 
 /**
  * Простая (2 балла)
@@ -114,13 +111,18 @@ fun whichRookThreatens(
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
 ): Int {
-    var res = 0
-    if (((kingX - rookX1) == 0) || ((kingY - rookY1) == 0))
-        res += 1
-    if (((kingX - rookX2) == 0) || ((kingY - rookY2) == 0))
-        res += 2
-    return res
+
+    val safe1 = rookX1 != kingX && rookY1 != kingY
+    val safe2 = rookX2 != kingX && rookY2 != kingY
+
+    if (safe1 && safe2) return 0
+    if (!safe1 && safe2) return 1
+    if (safe1 && !safe2) return 2
+    return 3
+
+
 }
+
 
 /**
  * Простая (2 балла)
@@ -137,12 +139,15 @@ fun rookOrBishopThreatens(
     rookX: Int, rookY: Int,
     bishopX: Int, bishopY: Int
 ): Int {
-    var res = 0
-    if (((kingX - rookX) == 0) || ((kingY - rookY) == 0))
-        res += 1
-    if (abs(kingX - bishopX) == abs(kingY - bishopY))
-        res += 2
-    return res
+
+    val safeRook = kingX != rookX && kingY != rookY
+    val safeBishop = abs(bishopX - kingX) != abs(bishopY - kingY)
+
+    if (safeRook && safeBishop) return 0
+    if (!safeRook && safeBishop) return 1
+    if (safeRook && !safeBishop) return 2
+    return 3
+
 }
 
 /**
@@ -154,15 +159,25 @@ fun rookOrBishopThreatens(
  * Если такой треугольник не существует, вернуть -1.
  */
 fun triangleKind(a: Double, b: Double, c: Double): Int {
-    val hypotenuse = maxOf(a, b, c)
-    val minLeg = minOf(a, b, c)
-    val middleLeg = avgOf<Double>(a, b, c)
-    return when {
-        (a >= b + c) or (b >= a + c) or (c >= a + b) -> -1
-        hypotenuse < sqrt(minLeg.pow(2.0) + middleLeg.pow(2.0)) -> 0
-        hypotenuse > sqrt(minLeg.pow(2.0) + middleLeg.pow(2.0)) -> 2
-        else -> 1
-    }
+    if ((a + b <= c) || (a + c <= b) || (b + c <= a))
+        return -1
+    if (a * a + b * b == c * c || a * a + c * c == b * b || c * c + b * b == a * a)
+        return 1
+
+    // Будем проверять знак каждого косинуса между всеми углами.
+    // Если отриц. - угол тупой, если полож. - острый
+    // Важен знак, а не числовое значение, поэтому можно не делить на 2 * a * b,
+    // т.к. не влияет на знак
+
+    val cos1 = a * a + b * b - c * c
+    val cos2 = a * a + c * c - b * b
+    val cos3 = b * b + c * c - a * a
+
+    if (cos1 < 0 || cos2 < 0 || cos3 < 0)
+        return 2
+    return 0
+
+
 }
 
 /**
@@ -173,19 +188,16 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Найти длину пересечения отрезков AB и CD.
  * Если пересечения нет, вернуть -1.
  */
-fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    var mc = c
-    var mb = b
-    var md = d
-    if (a > c) {
-        mc = a
-        mb = d
-        md = b
-    }
-    return when {
-        mb < mc -> -1
-        (mc < md) && (md > mb) -> mb - mc
-        else -> md - mc
-    }
+fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int = when {
 
+    c in a..b && d in a..b || a in c..d && b in c..d ->
+        min(b - a, d - c)
+
+    c in a..b + 1 ->
+        b - c
+
+    a in c..d + 1 ->
+        d - a
+
+    else -> -1
 }

@@ -2,10 +2,9 @@
 
 package lesson5.task1
 
-import java.util.*
+import ru.spbstu.wheels.sorted
 import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sqrt
+
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -108,6 +107,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     return res
 }
 
+
 /**
  * Простая (2 балла)
  *
@@ -118,10 +118,14 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")) -> true
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")) -> false
  */
+
+
 fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
-    for ((key, value) in a)
-        if (b[key] != value)
+
+    for (key in a.keys) {
+        if (a[key] != b[key])
             return false
+    }
     return true
 }
 
@@ -151,16 +155,7 @@ fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>) {
  * В выходном списке не должно быть повторяюихся элементов,
  * т. е. whoAreInBoth(listOf("Марат", "Семён, "Марат"), listOf("Марат", "Марат")) == listOf("Марат")
  */
-//предполагается, что поиск по хеш-таюлице имеет сложность O(1)
-fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
-    val minList = if (a.size > b.size) b else a
-    val res = mutableSetOf<String>()
-    val hashtable: HashSet<String> = (if (a.size <= b.size) b else a).toHashSet()
-    for (i in minList)
-        if (i in hashtable)
-            res += i
-    return res.toList()
-}
+fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.intersect(b).toList()
 
 /**
  * Средняя (3 балла)
@@ -200,15 +195,27 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   averageStockPrice(listOf("MSFT" to 100.0, "MSFT" to 200.0, "NFLX" to 40.0))
  *     -> mapOf("MSFT" to 150.0, "NFLX" to 40.0)
  */
-fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
-    val preRes = mutableMapOf<String, Pair<Double, Int>>()
-    for ((k, v) in stockPrices)
-        preRes[k] = (preRes[k] ?: Pair(0.0, 0)) + Pair(v, 1)
-    return preRes.map { it.key to it.value.first / it.value.second }.toMap()
-}
 
-private operator fun Pair<Double, Int>.plus(pair: Pair<Double, Int>): Pair<Double, Int> =
-    Pair(this.first + pair.first, this.second + pair.second)
+
+fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
+
+    if (stockPrices.isEmpty())
+        return mapOf()
+
+    val shares = mutableMapOf<String, Double>()
+    val count = mutableMapOf<String, Double>()
+
+    for ((company, cost) in stockPrices) {
+
+        shares[company] = (shares[company] ?: 0.0) + cost
+        count[company] = (count[company] ?: 0.0) + 1
+    }
+
+    for (i in shares.keys)
+        shares[i] = (shares[i]!!) / (count[i]!!)
+
+    return shares
+}
 
 
 /**
@@ -344,15 +351,20 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 4) -> Pair(0, 2)
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
+
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    val pairNum = mutableMapOf<Int, Int>()
+
+    val indexes = mutableMapOf<Int, Int>()  // indexes[number] = index
+
     for (i in list.indices) {
-        if (pairNum[list[i]] != null)
-            return Pair(pairNum[list[i]]!!, i)
-        pairNum[number - list[i]] = i
+        if (indexes[list[i]] != null)
+            return Pair(i, indexes[list[i]]!!).sorted()
+        val dig = number - list[i]
+        indexes[dig] = i
     }
     return Pair(-1, -1)
 }
+
 
 /**
  * Очень сложная (8 баллов)
@@ -375,27 +387,46 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-private fun findAns(k: Int, s: Int, A: Array<Array<Int>>, mTreasures: List<Pair<String, Pair<Int, Int>>>): Set<String> {
-    if (A[k][s] == 0) return setOf()
-    if (A[k - 1][s] == A[k][s]) {
-        return findAns(k - 1, s, A, mTreasures)
-    } else {
-        val res = findAns(k - 1, s - mTreasures[k - 1].second.first, A, mTreasures).toMutableSet()
-        res.add(mTreasures[k - 1].first)
-        return res
+
+
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    val inBackpack = mutableSetOf<String>()
+    val treasuresName = mutableListOf<String>()
+    val masses = mutableListOf<Int>()
+    val value = mutableListOf<Int>()
+
+    val maxValues = Array(treasures.size + 1) { Array(capacity + 1) { 0 } }
+
+    for ((treasure, info) in treasures) {
+        treasuresName.add(treasure)
+        masses.add(info.first)
+        value.add(info.second)
     }
+
+    for (i in 1..treasures.size) {
+        for (weight in 0..capacity) {
+            if (masses[i - 1] > weight) {
+                maxValues[i][weight] = maxValues[i - 1][weight]
+            } else {
+                maxValues[i][weight] =
+                    max(maxValues[i - 1][weight], maxValues[i - 1][weight - masses[i - 1]] + value[i - 1])
+            }
+        }
+    }
+
+    var curWeight = capacity
+    var i = maxValues.size - 1
+
+    while (i != 0 && curWeight > 0) {
+        if (maxValues[i][curWeight] != maxValues[i - 1][curWeight]) {
+            inBackpack.add(treasuresName[i - 1])
+            curWeight -= masses[i - 1]
+        }
+        i--
+    }
+    return inBackpack
 }
 
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>/*Name,(Weight,Price)*/, capacity: Int): Set<String> {
-    val mTreasures = treasures.toList()
-    val A: Array<Array<Int>> = Array(treasures.size + 1) { Array(capacity + 1) { 0 } }
-    for (k in 1..treasures.size)
-        for (s in 1..capacity)
-            if (s >= mTreasures[k - 1].second.first) {
-                A[k][s] =
-                    max(A[k - 1][s], A[k - 1][s - mTreasures[k - 1].second.first] + mTreasures[k - 1].second.second)
-            } else {
-                A[k][s] = A[k - 1][s]
-            }
-    return findAns(treasures.size, capacity, A, mTreasures)
-}
+
+
+

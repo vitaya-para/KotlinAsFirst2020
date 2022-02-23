@@ -3,8 +3,9 @@
 package lesson4.task1
 
 import lesson1.task1.discriminant
-import kotlin.math.pow
+import lesson3.task1.isPrime
 import kotlin.math.sqrt
+import  kotlin.math.pow
 
 // Урок 4: списки
 // Максимальное количество баллов = 12
@@ -139,13 +140,7 @@ fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else list.sum() /
  *
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
-fun center(list: MutableList<Double>): MutableList<Double> {
-    val avg = mean(list)
-    for (i in 0 until list.size)
-        list[i] -= avg
-    return list
-}
-
+fun center(list: MutableList<Double>): MutableList<Double> = TODO()
 /**
  * Средняя (3 балла)
  *
@@ -154,10 +149,13 @@ fun center(list: MutableList<Double>): MutableList<Double> {
  * C = a1b1 + a2b2 + ... + aNbN. Произведение пустых векторов считать равным 0.
  */
 fun times(a: List<Int>, b: List<Int>): Int {
-    var res = 0
+
+    var c = 0
+
     for (i in a.indices)
-        res += a[i] * b[i]
-    return res
+        c += a[i] * b[i]
+
+    return c
 }
 
 /**
@@ -168,19 +166,18 @@ fun times(a: List<Int>, b: List<Int>): Int {
  * Коэффициенты многочлена заданы списком p: (p0, p1, p2, p3, ..., pN).
  * Значение пустого многочлена равно 0 при любом x.
  */
-
 fun polynom(p: List<Int>, x: Int): Int {
-    if (p.isEmpty()) return 0
-    var res = 0
-    var myPow = 1
-    for (i in 0 until p.size) {
-        res += p[i] * myPow
-        myPow *= x
-    }
-    return res
-}
 
-fun Int.pow(i: Int): Int = this.toDouble().pow(i).toInt()
+    var ans = 0
+    var xPow = 1
+    for (elem in p) {
+        ans += elem * xPow
+        xPow *= x
+    }
+
+    return ans
+
+}
 
 /**
  * Средняя (3 балла)
@@ -199,6 +196,7 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
     return list
 }
 
+
 /**
  * Средняя (3 балла)
  *
@@ -207,25 +205,31 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
  * Множители в списке должны располагаться по возрастанию.
  */
 fun factorize(n: Int): List<Int> {
-    val thisNumberIsPrime = MutableList(sqrt(n.toDouble()).toInt() + 1) { true }
-    val res = mutableListOf<Int>()
-    var cp = n
-    thisNumberIsPrime[0] = false
-    thisNumberIsPrime[1] = false
-    for (i in 2 until thisNumberIsPrime.size) {
-        if (thisNumberIsPrime[i]) {
-            for (j in 2 * i until thisNumberIsPrime.size step i)
-                thisNumberIsPrime[j] = false
-            while (cp % i == 0) {
-                cp /= i
-                res.add(i)
+
+    val divs = mutableListOf<Int>()
+    var curN = n
+    var stop = false
+
+    while (curN != 1) {
+        var dig = 2
+        while (curN % dig != 0) {
+            if (dig * dig >= curN) {
+                divs.add(curN)
+                stop = true
+                break
             }
+            dig++
         }
+
+        if (stop)
+            break
+
+        divs.add(dig)
+        curN /= dig
     }
-    if (cp != 1)
-        res.add(cp)
-    return res
+    return divs
 }
+
 
 /**
  * Сложная (4 балла)
@@ -264,8 +268,27 @@ fun convert(n: Int, base: Int): List<Int> {
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, n.toString(base) и подобные), запрещается.
  */
-fun convertToString(n: Int, base: Int): String = convert(n, base).fold("")
-{ previousResult, element -> if (element < 10) previousResult + element else previousResult + ('a' - 10 + element) }
+fun convertToString(n: Int, base: Int): String {
+    if (n == 0)
+        return "0"
+
+    var curN = n
+    val allDigs = mutableListOf<String>()
+
+    while (curN > 0) {
+        val dig = curN % base
+        if (dig < 10)
+            allDigs.add(dig.toString())
+        else
+            allDigs.add(('a' + dig - 10).toString())
+
+        curN /= base
+    }
+    allDigs.reverse()
+    return allDigs.joinToString(separator = "")
+
+}
+
 
 /**
  * Средняя (3 балла)
@@ -296,73 +319,32 @@ fun decimal(digits: List<Int>, base: Int): Int {
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, str.toInt(base)), запрещается.
  */
-fun decimalFromString(str: String, base: Int): Int = decimal(
-    str.toList().map { if (it.code < 'a'.code) it.code - '0'.code else it - 'a' + 10 },
-    base
-)
+fun decimalFromString(str: String, base: Int): Int {
+    var ans = 0
+    var digPow = base.toDouble().pow(str.length - 1).toInt()
+
+    for (i in str.indices) {
+        val dig = if (str[i] >= 'a') str[i] - 'a' + 10 else str[i] - '0'
+        ans += dig * digPow
+        digPow /= base
+    }
+
+    return ans
+}
 
 /**
  * Сложная (5 баллов)
  *
  * Перевести натуральное число n > 0 в римскую систему.
- * Римские цифры: 1 = I, 4 = IV, 5 = V, 9 = IX, 10 = X, 40 = XL, 50 = L,
+ * Римские цифры: 1 = ,I 4 = IV, 5 = V, 9 = IX, 10 = X, 40 = XL, 50 = L,
  * 90 = XC, 100 = C, 400 = CD, 500 = D, 900 = CM, 1000 = M.
  * Например: 23 = XXIII, 44 = XLIV, 100 = C
  */
-
-fun roman(n: Int): String {
-    val nums = listOf(1000, 500, 100, 50, 10, 5, 1)
-    val assoc = mapOf<Int, String>(
-        1 to "I",
-        5 to "V",
-        10 to "X",
-        50 to "L",
-        100 to "C",
-        500 to "D",
-        1000 to "M"
-    )
-    var cp = n
-    return buildString {
-        append(padEnd(cp / 1000, 'M'))
-        cp %= 1000
-        for (i in 2 until nums.size) {
-            val occurrence = cp / nums[i - 1]
-            val occurrenceNext = cp / nums[i]
-            when {
-                occurrenceNext == 9 -> {
-                    append(assoc[nums[i]] + assoc[nums[i - 2]])
-                    cp -= (nums[i - 2] - nums[i])
-                }
-                // в случае если occurrence будет 2, нам будет более "выгодно" заменить на символы, связанные с ним, нежели
-                // с occurrenceNext (предполагается, что в последовательности MDCLXVI occurrence отвечает за более ранний символ,
-                // а occurrenceNext за последующий (если occurrence ~ M, то occurrenceNext ~ D))
-                occurrenceNext == 4 && occurrence != 2 -> {
-                    append(assoc[nums[i]] + assoc[nums[i - 1]])
-                    cp -= (nums[i - 1] - nums[i])
-                }
-                else -> when (occurrence) {
-                    4 -> {
-                        append(assoc[nums[i - 1]] + assoc[nums[i - 2]])
-                        cp -= (nums[i - 2] - nums[i - 1])
-                    }
-                    else -> {
-                        for (j in 0 until occurrence)
-                            append(assoc[nums[i - 1]])
-                        cp %= nums[i - 1]
-                    }
-                }
-            }
-        }
-        for (i in 1..cp) {
-            append(assoc[nums[6]])
-        }
-    }
-}
-
+fun roman(n: Int): String = TODO()
 /**
  * Очень сложная (7 баллов)
  *
- * Записать заданное натуральное число 1..999999 прописью по-русски.
+ * Записать заданное натуральное число 1..999_999 прописью по-русски.
  * Например, 375 = "триста семьдесят пять",
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */

@@ -2,9 +2,11 @@
 
 package lesson6.task1
 
-import lesson2.task2.daysInMonth
-import lesson4.task1.roman
-import kotlin.math.max
+import java.lang.IllegalArgumentException
+import java.util.*
+import kotlin.Exception
+import kotlin.math.abs
+
 
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
@@ -192,37 +194,34 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    if (Regex("""[^0-9 +-]""").containsMatchIn(expression))
-        throw IllegalArgumentException("Error")
 
-    var isNum = true
-    var plus = true
-    var res = 0
+    val parts = expression.split(" ")
 
-    val numsPlusMinus = Regex("""[0-9]+|[+-]""").findAll(expression)
-    for (i in numsPlusMinus) {
-        val tmp = i.value
+    var result = 0
+    var sign = 1
+    var count = 0
 
-        if (((tmp != "+") && (tmp != "-") && !isNum) || ((tmp == "-") && isNum) || ((tmp == "+") && isNum))
-            throw IllegalArgumentException("Error")
+    for (elem in parts) {
 
-        if (isNum)
-            when (plus) {
-                true -> res += tmp.toIntOrNull() ?: throw IllegalArgumentException("Error")
-                else -> res -= tmp.toIntOrNull() ?: throw IllegalArgumentException("Error")
+        if (elem.matches(Regex("""([1-9][\d]*)|(0)""")) && count % 2 == 0) {
+            result += sign * elem.toInt()
+            count = 1
+        }
+        else if (count % 2 == 1) {
+            sign = when (elem) {
+                "+" -> 1
+                "-" -> -1
+                else -> throw IllegalArgumentException("")
             }
+            count = 0
+        }
         else
-            when (tmp) {
-                "+" -> plus = true
-                else -> plus = false
-            }
-        isNum = !isNum
+            throw IllegalArgumentException("")
+
     }
-    //проверка на отсутствие в конце строки знака +/-
-    if (isNum)
-        throw IllegalArgumentException("Error")
-    return res
+    return result
 }
+
 
 
 /**
@@ -235,19 +234,18 @@ fun plusMinus(expression: String): Int {
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
 fun firstDuplicateIndex(str: String): Int {
-    val data = str.uppercase().split(' ')
-    var pos = 0
-    var lastWord = ""
 
-    for (i in data.indices) {
-        if (data[i] == lastWord)
-            return (pos - lastWord.length - 1)
-        pos += data[i].length + 1
-        lastWord = data[i]
+    val words = str.lowercase(Locale.getDefault()).split(" ")
+    var index = words[0].length + 1
+
+    for (i in 1 until words.size) {
+        if (words[i] == words[i - 1])
+            return index - words[i].length - 1
+        index += words[i].length + 1
     }
     return -1
-}
 
+}
 
 /**
  * Сложная (6 баллов)
